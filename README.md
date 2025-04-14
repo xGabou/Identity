@@ -9,11 +9,10 @@
 **Versions**:
 
 |        | Fabric | Forge |
-| ----------- | ----------- | ----------- |
-| 1.16      | ✅    | ❌   |
-| 1.17   | ✅   | ✅    |
+|--------| ----------- | ----------- |
+| 1.20.1 | ✅   | ✅    |
 
-**Required Libraries (1.17.1+):**
+**Required Libraries (1.20.1):**
 
 Fabric => [Architectury API (Fabric)](https://www.curseforge.com/minecraft/mc-mods/architectury-fabric)
 
