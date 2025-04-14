@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(LivingEntity.class)
 public interface LivingEntityAccessor {
+
     @Accessor
     boolean isJumping();
 
@@ -43,4 +44,10 @@ public interface LivingEntityAccessor {
 
     @Invoker
     float callGetEyeHeight(EntityPose pose, EntityDimensions dimensions);
+
+    // 🔥 Add this to access getNextAirOnLand(int)
+    @Invoker("getNextAirOnLand")
+    int identity$getNextAirOnLand(int air);
+
+
 }

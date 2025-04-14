@@ -9,19 +9,20 @@ import draylar.identity.mixin.accessor.LivingEntityAccessor;
 import draylar.identity.registry.IdentityEntityTags;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.SpiderEntity;
-import net.minecraft.entity.mob.WaterCreatureEntity;
 import net.minecraft.entity.passive.BatEntity;
 import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,7 +30,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -61,24 +61,22 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
         }
     }
 
-    @Redirect(
-            method = "baseTick",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setAir(I)V", ordinal = 2)
-    )
-    private void cancelAirIncrement(LivingEntity livingEntity, int air) {
-        // Aquatic creatures should not regenerate breath on land
+    @Inject(method = "baseTick", at = @At("HEAD"))
+    private void identity$preventAirRegenForAquatic(CallbackInfo ci) {
         if ((Object) this instanceof PlayerEntity player) {
             LivingEntity identity = PlayerIdentity.getIdentity(player);
-
-            if (identity != null) {
-                if (Identity.isAquatic(identity)) {
-                    return;
-                }
+            if (identity$isAquatic(identity) && !player.isSubmergedInWater()) {
+                // Prevent air regen here if needed
+                player.setAir(Math.min(player.getAir(), player.getMaxAir()));
             }
         }
-
-        this.setAir(this.getNextAirOnLand(this.getAir()));
     }
+
+
+
+
+
+
 
     @Redirect(
             method = "travel",
@@ -97,20 +95,208 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
 
         return this.hasStatusEffect(StatusEffects.SLOW_FALLING);
     }
+    @Unique
+    private boolean identity$isAquatic(LivingEntity identity) {
+        if (identity == null) return false;
 
-    @ModifyVariable(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;hasStatusEffect(Lnet/minecraft/entity/effect/StatusEffect;)Z", ordinal = 1), ordinal = 0)
-    public float applyWaterCreatureSwimSpeedBoost(float j) {
+        SpawnGroup group = identity.getType().getSpawnGroup();
+
+        return switch (group) {
+            case WATER_CREATURE, WATER_AMBIENT, UNDERGROUND_WATER_CREATURE -> true;
+            default -> false;
+        };
+    }
+
+    @Inject(method = "baseTick", at = @At("HEAD"))
+    private void identity$suffocateAquaticIdentities(CallbackInfo ci) {
         if ((Object) this instanceof PlayerEntity player) {
             LivingEntity identity = PlayerIdentity.getIdentity(player);
 
-            // Apply 'Dolphin's Grace' status effect benefits if the player's Identity is a water creature
-            if (identity instanceof WaterCreatureEntity) {
-                return .96f;
+            if (identity$isAquatic(identity)) {
+                boolean inWater = player.isTouchingWater();
+                boolean inBubbleColumn = player.getWorld().getBlockState(player.getBlockPos()).isOf(Blocks.BUBBLE_COLUMN);
+
+                int air = player.getAir();
+
+                if (!inWater && !inBubbleColumn) {
+                    if (player.age % 20 == 0) { // reduce air every 10 ticks (0.5 sec)
+                        if (air > 0) {
+                            player.setAir(Math.max(air - 15, 0)); // drop by 15 to deplete in ~200 ticks
+                        } else {
+                            player.setAir(-1); // prevent re-damage spam
+                            player.damage(player.getDamageSources().drown(), 2.0F);
+                        }
+                    }
+                } else {
+                    if (air < player.getMaxAir()) {
+                        player.setAir(player.getMaxAir());
+                    }
+                }
             }
         }
 
-        return j;
     }
+    @Redirect(
+            method = "baseTick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/LivingEntity;getNextAirOnLand(I)I"
+            )
+    )
+    private int identity$cancelAirRegenOnLand(LivingEntity instance, int air) {
+        if ((Object) this instanceof PlayerEntity player) {
+            LivingEntity identity = PlayerIdentity.getIdentity(player);
+
+            if (identity$isAquatic(identity)
+                    && !player.isTouchingWater()
+                    && !player.getWorld().getBlockState(player.getBlockPos()).isOf(Blocks.BUBBLE_COLUMN)) {
+
+                return air;
+            }
+        }
+
+
+        return ((LivingEntityAccessor) instance).identity$getNextAirOnLand(air);
+    }
+//    @Inject(method = "travel", at = @At("HEAD"))
+//    private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci) {
+//        if ((Object) this instanceof PlayerEntity player) {
+//            LivingEntity identity = PlayerIdentity.getIdentity(player);
+//
+//            if (identity$isAquatic(identity)) {
+//                boolean inWater = player.isTouchingWater();
+//                boolean inBubbleColumn = player.getWorld().getBlockState(player.getBlockPos()).isOf(Blocks.BUBBLE_COLUMN);
+//
+//                if (inWater || inBubbleColumn) {
+//                    double speedMultiplier = identity.getType() == EntityType.DOLPHIN ? 0.35 : 0.2;
+//
+//                    Vec3d velocity = player.getVelocity();
+//
+//                    // Add directional input (WASD) with multiplier
+//                    Vec3d horizontal = new Vec3d(movementInput.x, 0, movementInput.z);
+//                    Vec3d newVelocity = horizontal.normalize().multiply(speedMultiplier);
+//
+//                    // Preserve vertical movement (space/sneak already handled by default)
+//                    player.setVelocity(newVelocity.x, velocity.y, newVelocity.z);
+//                }
+//            }
+//        }
+//    }
+
+
+
+
+
+
+
+
+//    @Inject(method = "travel", at = @At("HEAD"))
+//    private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci) {
+//        if ((Object) this instanceof PlayerEntity player) {
+//            LivingEntity identity = PlayerIdentity.getIdentity(player);
+//
+//            if (identity$isAquatic(identity)) {
+//                boolean inWater = player.isTouchingWater();
+//                boolean inBubbleColumn = player.getWorld().getBlockState(player.getBlockPos()).isOf(Blocks.BUBBLE_COLUMN);
+//
+//                if (inWater || inBubbleColumn) {
+//                    double speedMultiplier = identity.getType() == EntityType.DOLPHIN ? 0.35 : 0.2;
+//
+//                    // Get vertical input (up/down)
+//                    double y = 0.0;
+//                    if (((LivingEntityAccessor) player).isJumping()) {
+//                        y += speedMultiplier;
+//                    } else if (player.isSneaking()) {
+//                        y -= speedMultiplier;
+//                    }
+//
+//                    // Horizontal movement from movement input
+//                    Vec3d horizontalInput = new Vec3d(movementInput.x, 0, movementInput.z);
+//                   if(horizontalInput.lengthSquared() > 0.0001)
+//                   {
+//                       // Apply speed to forward movement only
+//                       Vec3d dir = player.getRotationVec(1.0F).normalize();
+//                       Vec3d newVel = dir.multiply(speedMultiplier);
+//
+//                       // Preserve Y velocity (e.g., rising/falling in water)
+//                       player.setVelocity(newVel.x, y, newVel.z);
+//                   }
+//
+//
+//                }
+//            }
+//        }
+//    }
+@Inject(method = "travel", at = @At("HEAD"))
+private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci) {
+    if ((Object) this instanceof PlayerEntity player) {
+        LivingEntity identity = PlayerIdentity.getIdentity(player);
+
+        if (identity$isAquatic(identity)) {
+            boolean inWater = player.isTouchingWater();
+            boolean inBubbleColumn = player.getWorld().getBlockState(player.getBlockPos()).isOf(Blocks.BUBBLE_COLUMN);
+
+            if (inWater || inBubbleColumn) {
+                double speedMultiplier = identity.getType() == EntityType.DOLPHIN ? 0.35 : 0.2;
+
+                // Get base 3D input (includes vertical movement key)
+                Vec3d input = movementInput;
+
+                // Add jump/sneak input to Y
+                if (((LivingEntityAccessor) player).isJumping()) {
+                    input = input.add(0, 1.0, 0);
+                }
+                if (player.isSneaking()) {
+                    input = input.add(0, -1.0, 0);
+                }
+
+                // Apply full 3D rotation based on player's camera
+                Vec3d look = player.getRotationVec(1.0F);
+                Vec3d up = new Vec3d(0, 1, 0);
+                Vec3d right = look.crossProduct(up).normalize();
+                Vec3d adjustedUp = right.crossProduct(look).normalize(); // true up vector
+
+                // Combine axes with 3D projection
+                Vec3d worldInput =
+                        right.multiply(input.x)
+                                .add(adjustedUp.multiply(input.y))
+                                .add(look.multiply(input.z));
+
+                if (worldInput.lengthSquared() > 0.0001) {
+                    player.setVelocity(worldInput.normalize().multiply(speedMultiplier));
+                }
+            }
+
+
+
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//    @ModifyVariable(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;hasStatusEffect(Lnet/minecraft/entity/effect/StatusEffect;)Z", ordinal = 1), ordinal = 0)
+//    public LivingEntity applyWaterCreatureSwimSpeedBoost(LivingEntity value) {
+//        if ((Object) this instanceof PlayerEntity player) {
+//            LivingEntity identity = PlayerIdentity.getIdentity(player);
+//
+//            // Apply 'Dolphin's Grace' status effect benefits if the player's Identity is a water creature
+//            if (identity instanceof WaterCreatureEntity) {
+//                return .96f;
+//            }
+//        }
+//
+//        return value;
+//    }
 
     @Inject(
             method = "handleFallDamage",
@@ -201,15 +387,24 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
     }
 
     @Inject(method = "canBreatheInWater", at = @At("HEAD"), cancellable = true)
-    protected void identity_canBreatheInWater(CallbackInfoReturnable<Boolean> cir) {
-        if((LivingEntity) (Object) this instanceof PlayerEntity player) {
-            LivingEntity entity = PlayerIdentity.getIdentity(player);
+    private void identity_canBreatheInWater(CallbackInfoReturnable<Boolean> cir) {
+        if ((Object) this instanceof PlayerEntity player) {
+            LivingEntity identity = PlayerIdentity.getIdentity(player);
 
-            if (entity != null) {
-                cir.setReturnValue(entity.canBreatheInWater() || entity instanceof DolphinEntity || entity.getType().isIn(IdentityEntityTags.UNDROWNABLE));
+            if (identity != null) {
+                if (identity$isAquatic(identity)) {
+                    cir.setReturnValue(true);
+                } else if (identity.getType().isIn(IdentityEntityTags.UNDROWNABLE)) {
+                    cir.setReturnValue(true);
+                } else {
+                    cir.setReturnValue(false);
+                }
             }
         }
     }
+
+
+
 
     @Unique
     private boolean nearbySongPlaying = false;

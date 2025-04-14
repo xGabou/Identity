@@ -7,9 +7,10 @@ license = "MIT"
 modId = "identity"
 version = "${version}"
 displayName = "Identity"
-authors = "Draylar"
+authors = "Draylar && Updated by Gaboouu"
 description = '''
 Play as your favorite entities!
+No more crashes !!!
 '''
 #logoFile = ""
 
