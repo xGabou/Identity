@@ -13,17 +13,12 @@ import draylar.identity.screen.widget.PlayerWidget;
 import draylar.identity.screen.widget.SearchWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.Window;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.entity.LivingEntity;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,257 +28,297 @@ import java.util.stream.Collectors;
 
 public class IdentityScreen extends Screen {
 
-    private final List<IdentityType<?>> unlocked = new ArrayList<>();
-    private final Map<IdentityType<?>, LivingEntity> renderEntities = new LinkedHashMap<>();
-    private final List<EntityWidget> entityWidgets = new ArrayList<>();
-    private final SearchWidget searchBar = createSearchBar();
-    private final PlayerWidget playerButton = createPlayerButton();
-    private final ButtonWidget helpButton = createHelpButton();
-    private String lastSearchContents = "";
+    // == State ==
+    private final List<IdentityType<?>>                   unlocked        = new ArrayList<>();
+    private final Map<IdentityType<?>, LivingEntity>     renderEntities  = new LinkedHashMap<>();
+    private final List<EntityWidget>                     entityWidgets   = new ArrayList<>();
+
+    // header widgets
+    private SearchWidget   searchBar;
+    private PlayerWidget   playerButton;
+    private ButtonWidget   helpButton;
+
+    private String lastSearch = "";
+    private int    scrollY    = 0;
 
     public IdentityScreen() {
         super(Text.literal(""));
-        super.init(MinecraftClient.getInstance(), MinecraftClient.getInstance().getWindow().getScaledWidth(), MinecraftClient.getInstance().getWindow().getScaledHeight());
+    }
+    public double getScaleFactor(){
+        assert client != null;
+        return client.getWindow().getScaleFactor();
+    }
 
-        // don't initialize if the player is null
-        if(client.player == null) {
-            client.setScreen(null);
-            return;
-        }
 
-        populateRenderEntities();
+    @Override
+    protected void init() {
+        super.init();
+
+        // instantiate header widgets
+        searchBar    = createSearchBar();
+        playerButton = createPlayerButton();
+        helpButton   = createHelpButton();
+
         addDrawableChild(searchBar);
         addDrawableChild(playerButton);
         addDrawableChild(helpButton);
 
-        // collect unlocked entities
-        unlocked.addAll(collectUnlockedEntities(client.player));
-
-        // Some users were experiencing a crash with this sort method, so we catch potential errors here
-        // https://github.com/Draylar/identity/issues/87
-        try {
-            // sort unlocked based on favorites
-            unlocked.sort((first, second) -> {
-                if(PlayerFavorites.has(client.player, first)) {
-                    return -1;
-                }
-
-                return 1;
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
+        ClientPlayerEntity player = client.player;
+        if (player == null) {
+            client.setScreen(null);
+            return;
         }
 
-        // add entity widgets
-        populateEntityWidgets(client.player, unlocked);
+        // preload entities
+        for (IdentityType<?> type : IdentityType.getAllTypes(client.world)) {
+            LivingEntity e = (LivingEntity) type.create(client.world);
+            renderEntities.put(type, e);
+        }
 
-        // implement search handler
+        // filter + sort unlocked
+        unlocked.addAll(renderEntities.keySet().stream()
+                .filter(t -> PlayerUnlocks.has(player, t) || player.isCreative())
+                .collect(Collectors.toList()));
+        unlocked.sort((a, b) -> PlayerFavorites.has(player, a) ? -1 : 1);
+
+        populateEntities(player, unlocked);
+
         searchBar.setChangedListener(text -> {
             focusOn(searchBar);
-
-            // Only re-filter if the text contents changed
-            if(!lastSearchContents.equals(text)) {
-                ((ScreenAccessor) this).getSelectables().removeIf(button -> button instanceof EntityWidget);
-                children().removeIf(button -> button instanceof EntityWidget);
+            if (!lastSearch.equals(text)) {
+                ((ScreenAccessor) this).getSelectables().removeIf(w -> w instanceof EntityWidget);
+                children().removeIf(w -> w instanceof EntityWidget);
                 entityWidgets.clear();
 
-                List<IdentityType<?>> filtered = unlocked
-                        .stream()
-                        .filter(type -> text.isEmpty() || type.getEntityType().getTranslationKey().contains(text))
+                List<IdentityType<?>> filtered = unlocked.stream()
+                        .filter(t -> text.isEmpty() || t.getEntityType().getTranslationKey().contains(text))
                         .collect(Collectors.toList());
 
-                populateEntityWidgets(client.player, filtered);
+                populateEntities(player, filtered);
+                lastSearch = text;
+                scrollY    = 0;
             }
-
-            lastSearchContents = text;
         });
     }
 
-    @Override
-    public void clearChildren() {
+    private void populateEntities(ClientPlayerEntity player, List<IdentityType<?>> list) {
+        final int perRow   = 7;
+        final int marginX  = 15;
+        final int startY = 0;
+        Window win         = client.getWindow();
+        float cellW        = (win.getScaledWidth() - marginX * 2f) / perRow;
+        float cellH        = win.getScaledHeight() / 5f;
 
+        IdentityType<LivingEntity> current = IdentityType.from(PlayerIdentity.getIdentity(player));
+
+        for (int i = 0; i < list.size(); i++) {
+            IdentityType<?> type = list.get(i);
+            int xIdx = i % perRow, yIdx = i / perRow;
+            int x = marginX + Math.round(cellW * xIdx);
+            int y = startY  + Math.round(cellH * yIdx);
+
+            boolean isCurr = current != null && current.equals(type);
+            boolean fav    = PlayerFavorites.has(player, type);
+
+            // **Raw** EntityWidget, no <> or <?>
+            EntityWidget widget = new EntityWidget(
+                    x, y,
+                    Math.round(cellW), Math.round(cellH),
+                    type,
+                    renderEntities.get(type),
+                    this,
+                    fav,
+                    isCurr
+            );
+
+            addDrawableChild(widget);
+            entityWidgets.add(widget);
+        }
+    }
+
+    private int getHeaderHeight() {
+        return (int)(searchBar.getY() + searchBar.getHeight() + 5);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context);
+    public void render(DrawContext ctx, int mx, int my, float delta) {
+        renderBackground(ctx);
+        renderEntityGrid(ctx, mx, my, delta);
 
-        // Render background hint when no identities have been collected
-        if(unlocked.isEmpty()) {
-            Text message = Text.translatable("identity.menu_hint");
-            float xPosition = (getWindow().getWidth() / 2f) - (MinecraftClient.getInstance().textRenderer.getWidth(message) / 2f);
-            float yPosition = (getWindow().getHeight() / 2f);
-            context.drawText(client.textRenderer, message, (int) xPosition, (int) yPosition, 0xFFFFFF, true);
+        if (unlocked.isEmpty()) {
+            String hint = Text.translatable("identity.menu_hint").getString();
+            int w = client.textRenderer.getWidth(hint);
+            int x = (client.getWindow().getWidth() - w) / 2;
+            int y = client.getWindow().getHeight() / 2;
+            ctx.drawText(client.textRenderer, hint, x, y, 0xFFFFFF, true);
         }
 
-        // tooltips
-//        for (Selectable selectable : ((ScreenAccessor) this).getSelectables()) {
-//            if(selectable instanceof PressableWidget button) {
-//                if(button.isHovered()) {
-//                    button.renderTooltip(matrices, mouseX, mouseY);
-//                    break;
-//                }
-//            }
-//        }
-
-        searchBar.render(context, mouseX, mouseY, delta);
-        playerButton.render(context, mouseX, mouseY, delta);
-        helpButton.render(context, mouseX, mouseY, delta);
-        renderEntityWidgets(context, mouseX, mouseY, delta);
+        // header on top
+        searchBar.render(ctx, mx, my, delta);
+        playerButton.render(ctx, mx, my, delta);
+        helpButton.render(ctx, mx, my, delta);
     }
 
-    public void renderEntityWidgets(DrawContext context, int mouseX, int mouseY, float delta) {
-        double scaledFactor = this.client.getWindow().getScaleFactor();
-        int top = 35;
+    private void renderEntityGrid(DrawContext ctx, int mx, int my, float delta) {
+        double sf      = client.getWindow().getScaleFactor();
+        int headerH    = getHeaderHeight();
+        int viewH      = this.height - headerH;
+        int scrollTop  = scrollY;
+        int scrollBot  = scrollY + viewH;
 
-        context.getMatrices().push();
+        // 1) Clip everything below the header
         RenderSystem.enableScissor(
-                (int) ((double) 0 * scaledFactor),
-                (int) ((double) 0 * scaledFactor),
-                (int) ((double) width * scaledFactor),
-                (int) ((double) (this.height - top) * scaledFactor));
+                0,
+                (int)(headerH * sf),
+                (int)(width   * sf),
+                (int)(viewH   * sf)
+        );
 
-        entityWidgets.forEach(widget -> {
-            widget.render(context, mouseX, mouseY, delta);
-        });
+        // 2) Push & translate into "widget space"
+        ctx.getMatrices().push();
+        ctx.getMatrices().translate(0, headerH - scrollY, 0);
 
+        // 3) Draw only widgets whose Y overlaps [scrollTop, scrollBot]
+        for (EntityWidget w : entityWidgets) {
+            int wy = w.getY(), wh = w.getHeight();
+            if (wy + wh < scrollTop || wy > scrollBot) continue;
+
+            // Pass the adjusted mouseY so hover checks line up:
+            // … inside your loop, instead of w.render(ctx, mx, my, delta):
+            w.render(ctx, mx, my + scrollY - headerH, delta);
+
+        }
+
+        // 4) Pop & disable scissor
+        ctx.getMatrices().pop();
         RenderSystem.disableScissor();
+    }
 
-        context.getMatrices().pop();
+
+
+
+
+    @Override
+    public boolean mouseScrolled(double mx, double my, double amount) {
+        if (entityWidgets.isEmpty()) return false;
+
+        int rowH   = entityWidgets.get(0).getHeight();
+        int rows   = (int)Math.ceil(unlocked.size() / 7f);
+        int totalH = rows * rowH;
+        int viewH  = this.height - getHeaderHeight();
+        // allow 10px of “empty” space at the bottom
+        int bottomPadding = 10;
+        int maxY = Math.max(0, totalH - viewH + bottomPadding);
+
+
+        scrollY = Math.max(0, Math.min(scrollY - (int)(amount * rowH), maxY));
+        return true;
+    }
+    @Override
+    public void resize(MinecraftClient client, int width, int height) {
+        // update this.width/this.height and *do not* clear children() for us
+        super.resize(client, width, height);
+
+        // 1) Dispose old entities
+        for (EntityWidget w : entityWidgets) {
+            w.dispose();
+        }
+
+        // 2) Remove them from the screen
+        //   (a) from the selectables list:
+        ((ScreenAccessor) this).getSelectables().removeIf(w -> w instanceof EntityWidget);
+        //   (b) from the children() (drawables) list:
+        children().removeIf(w -> w instanceof EntityWidget);
+
+        // 3) Clear our backing list
+        entityWidgets.clear();
+
+        // 4) Reset scroll
+        scrollY = 0;
+
+        // 5) Re‑populate the grid at the new size
+        ClientPlayerEntity player = client.player;
+        if (player != null) {
+            populateEntities(player, unlocked);
+        }
+    }
+
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int button) {
+        int hh = getHeaderHeight();
+        // if we clicked below the header, first try our scrolled widgets:
+        if (my >= hh) {
+            double adjY = my + scrollY - hh;
+            for (EntityWidget<?> w : entityWidgets) {
+                if (w.mouseClicked(mx, adjY, button)) {
+                    return true;
+                }
+            }
+        }
+
+        // otherwise fall back to header buttons or default
+        if (my < hh) {
+            return searchBar.mouseClicked(mx, my, button)
+                    || playerButton.mouseClicked(mx, my, button)
+                    || helpButton.mouseClicked(mx, my, button);
+        }
+        return super.mouseClicked(mx, my, button);
+    }
+
+
+    @Override
+    public void close() {
+        entityWidgets.forEach(EntityWidget::dispose);
+        super.close();
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        if(entityWidgets.size() > 0) {
-            float firstPos = entityWidgets.get(0).getY();
-
-            // Top section should always have mobs, prevent scrolling the entire list down the screen
-            if(amount == 1 && firstPos >= 35) {
-                return false;
-            }
-
-            ((ScreenAccessor) this).getSelectables().forEach(button -> {
-                if(button instanceof EntityWidget widget) {
-                    widget.setY((int) (widget.getY() + amount * 10));
-                }
-            });
-        }
-
-        return false;
-    }
-
-    private void populateEntityWidgets(ClientPlayerEntity player, List<IdentityType<?>> unlocked) {
-        // add widget for each unlocked entity
-        int x = 15;
-        int y = 35;
-        int rows = (int) Math.ceil(unlocked.size() / 7f);
-
-        IdentityType<LivingEntity> currentType = IdentityType.from(PlayerIdentity.getIdentity(player));
-
-        for (int yIndex = 0; yIndex <= rows; yIndex++) {
-            for (int xIndex = 0; xIndex < 7; xIndex++) {
-                int listIndex = yIndex * 7 + xIndex;
-
-                if(listIndex < unlocked.size()) {
-                    IdentityType<?> type = unlocked.get(listIndex);
-
-                    // TODO: only render selected type, this will show all eg. sheep
-                    // Determine whether this widget should start with the selection outline
-                    boolean isCurrent = false;
-                    if(currentType != null && currentType.equals(type)) {
-                        isCurrent = true;
-                    }
-
-                    EntityWidget entityWidget = new EntityWidget(
-                            (getWindow().getScaledWidth() - 27) / 7f * xIndex + x,
-                            getWindow().getScaledHeight() / 5f * yIndex + y,
-                            (getWindow().getScaledWidth() - 27) / 7f,
-                            getWindow().getScaledHeight() / 5f,
-                            type,
-                            renderEntities.get(type),
-                            this,
-                            PlayerFavorites.has(player, type),
-                            isCurrent
-                    );
-
-                    addDrawableChild(entityWidget);
-                    entityWidgets.add(entityWidget);
-                }
-            }
-        }
-    }
-
-    private void populateRenderEntities() {
-        if(renderEntities.isEmpty()) {
-            List<IdentityType<?>> types = IdentityType.getAllTypes(MinecraftClient.getInstance().world);
-            for (IdentityType<?> type : types) {
-                Entity entity = type.create(MinecraftClient.getInstance().world);
-                if(entity instanceof LivingEntity living) {
-                    renderEntities.put(type, living);
-                }
-            }
-
-            Identity.LOGGER.info(String.format("Loaded %d entities for rendering", types.size()));
-        }
-    }
-
-    private List<IdentityType<?>> collectUnlockedEntities(ClientPlayerEntity player) {
-        List<IdentityType<?>> unlocked = new ArrayList<>();
-
-        // collect current unlocked identities (or allow all for creative users)
-        renderEntities.forEach((type, instance) -> {
-            if(PlayerUnlocks.has(player, type) || player.isCreative()) {
-                unlocked.add(type);
-            }
-        });
-
-        return unlocked;
-    }
-
-    private SearchWidget createSearchBar() {
-        return new SearchWidget(
-                getWindow().getScaledWidth() / 2f - (getWindow().getScaledWidth() / 4f / 2) - 5,
-                5,
-                getWindow().getScaledWidth() / 4f,
-                20f);
-    }
-
-    private PlayerWidget createPlayerButton() {
-        return new PlayerWidget(
-                getWindow().getScaledWidth() / 2f + (getWindow().getScaledWidth() / 8f) + 5,
-                7,
-                15,
-                15,
-                this);
-    }
-
-    private ButtonWidget createHelpButton() {
-        return new HelpWidget(
-                (int) (getWindow().getScaledWidth() / 2f - (getWindow().getScaledWidth() / 4f / 2) - 5) - 30,
-                5,
-                20,
-                20);
-    }
-
-    public Window getWindow() {
-        return MinecraftClient.getInstance().getWindow();
-    }
-
-    public void disableAll() {
-        entityWidgets.forEach(button -> button.setActive(false));
-    }
+    public void clearChildren() { /* no-op */ }
 
     @Override
     public boolean shouldPause() {
         return false;
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(mouseY < 35) {
-            return searchBar.mouseClicked(mouseX, mouseY, button) || playerButton.mouseClicked(mouseX, mouseY, button) || helpButton.mouseClicked(mouseX, mouseY, button);
-        } else {
-            return super.mouseClicked(mouseX, mouseY, button);
+    public void disableAll() {
+        for (EntityWidget w : entityWidgets) {
+            w.setActive(false);
         }
+    }
+
+    // -- Header Factory Methods --
+
+    private SearchWidget createSearchBar() {
+        assert client != null;
+        float w = client.getWindow().getScaledWidth() / 4f;
+        return new SearchWidget(
+                client.getWindow().getScaledWidth() / 2f - (w / 2f),
+                5, w, 20f
+        );
+    }
+
+    private PlayerWidget createPlayerButton() {
+        assert client != null;
+        float cx = client.getWindow().getScaledWidth() / 2f;
+        return new PlayerWidget(
+                cx + (client.getWindow().getScaledWidth() / 8f) + 5,
+                7, 15, 15,
+                this
+        );
+    }
+
+    private ButtonWidget createHelpButton() {
+        assert client != null;
+        float cx = client.getWindow().getScaledWidth() / 2f;
+        return new HelpWidget(
+                (int)(cx - (client.getWindow().getScaledWidth() / 8f) - 5) - 30,
+                5, 20, 20
+        );
+    }
+
+    public int getGuiScale() {
+        assert client != null;
+        return client.options.getGuiScale().getValue();
     }
 }
