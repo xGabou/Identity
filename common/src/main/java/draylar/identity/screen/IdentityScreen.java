@@ -160,13 +160,13 @@ public class IdentityScreen extends Screen {
     }
 
     private void renderEntityGrid(DrawContext ctx, int mx, int my, float delta) {
-        double sf      = client.getWindow().getScaleFactor();
-        int headerH    = getHeaderHeight();
-        int viewH      = this.height - headerH;
-        int scrollTop  = scrollY;
-        int scrollBot  = scrollY + viewH;
+        double sf       = client.getWindow().getScaleFactor();
+        int    headerH  = getHeaderHeight();
+        int    viewH    = this.height - headerH;
+        int    scrollTop= scrollY;
+        int    scrollBot= scrollY + viewH;
 
-        // 1) Clip everything below the header
+        // 1) Clip below the header
         RenderSystem.enableScissor(
                 0,
                 (int)(headerH * sf),
@@ -174,25 +174,43 @@ public class IdentityScreen extends Screen {
                 (int)(viewH   * sf)
         );
 
-        // 2) Push & translate into "widget space"
+        // 2) Push & translate into scroll‑space
         ctx.getMatrices().push();
         ctx.getMatrices().translate(0, headerH - scrollY, 0);
 
-        // 3) Draw only widgets whose Y overlaps [scrollTop, scrollBot]
-        for (EntityWidget w : entityWidgets) {
+        // 3) Draw only visible widgets
+        for(EntityWidget w : entityWidgets) {
             int wy = w.getY(), wh = w.getHeight();
-            if (wy + wh < scrollTop || wy > scrollBot) continue;
-
-            // Pass the adjusted mouseY so hover checks line up:
-            // … inside your loop, instead of w.render(ctx, mx, my, delta):
+            if(wy + wh < scrollTop || wy > scrollBot) continue;
             w.render(ctx, mx, my + scrollY - headerH, delta);
-
         }
 
-        // 4) Pop & disable scissor
         ctx.getMatrices().pop();
         RenderSystem.disableScissor();
+
+        // 4) **Draw tooltip** at the **raw** mouse coords
+        //    (we test against the **adjusted** Y, but render at the real Y)
+        for(EntityWidget w : entityWidgets) {
+            if(w.isMouseOver(mx, my + scrollY - headerH)) {
+                ctx.drawTooltip(
+                        client.textRenderer,
+                        w.getHoverName(),
+                        mx, my
+                );
+                break;
+            }
+        }
     }
+    // somewhere in your IdentityScreen (you already have getGuiScale() and getScaleFactor()):
+    public double getEffectiveGuiScale() {
+        int raw = client.options.getGuiScale().getValue();
+        // 0 means “Auto” → use the window’s computed scaleFactor
+        return raw == 0
+                ? client.getWindow().getScaleFactor()
+                : raw;
+    }
+
+
 
 
 

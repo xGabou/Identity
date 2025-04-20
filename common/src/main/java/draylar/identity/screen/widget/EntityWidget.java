@@ -16,7 +16,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.text.Text;
 
 public class EntityWidget<T extends LivingEntity> extends PressableWidget {
-
+    public static int VERTICAL_OFFSET = 30;
+    private static int BASE_Y_OFFSET = 10;
     private final IdentityType<T> type;
     private final T              entity;
     private final int            size;
@@ -72,56 +73,63 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         }
         return super.mouseClicked(mx, my, button);
     }
+    // in EntityWidget<T>
+    public Text getHoverName() {
+        return type.createTooltipText(entity);
+    }
+
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        // 1) No super.render() here (we want transparent background)
-        // 2) Compute your already‑scaled “base” pixel size per block‑unit:
+        // 1) transparent background, no super.render()
+
+        // 2) clamp GUI‑scale to [1..5], default Auto→3
+        int rawGui = parent.getGuiScale();    // 0 == Auto, otherwise 1–5
+        int clampedGui = (rawGui == 0) ? 3 : Math.min(rawGui, 5);
+
+        // 3) compute how “big” a block unit is in pixels
         float baseSizePerBlock = 25F / Math.max(entity.getWidth(), entity.getHeight());
-        double guiScaleFactor = parent.getScaleFactor();
-        int   guiScale       = parent.getGuiScale();
-        double finalFactor   = guiScale == 0 ? guiScaleFactor : (guiScaleFactor / guiScale);
-        int    baseSize      = Math.max(1, (int)(baseSizePerBlock * finalFactor));
 
-        // 3) Now measure how tall that would draw:
-        int pixelHeight = (int)(entity.getHeight() * baseSize);
+        // 4) apply inverse scaling by GUI‑scale
+        double windowScale = parent.getScaleFactor();
+        double effectiveScale = windowScale / clampedGui;
 
-        // 4) If that’s taller than the cell, clamp it:
-        int cellH = getHeight();
-        if(pixelHeight > cellH) {
-            // shrink so the *entire* height fits
-            double shrink = (double)cellH / pixelHeight;
-            baseSize = Math.max(1, (int)(baseSize * shrink));
-            pixelHeight = cellH;
-        }
+        // 5) final pixel size for our model
+        int size = Math.max(1, (int)(baseSizePerBlock * effectiveScale));
 
-        // 5) Compute center‑X and bottom‑Y so the model sits flush inside the box
-        int cx      = getX() + getWidth() / 2;
-        int bottomY = getY() + cellH - 2; // 2px of bottom padding
+        // 6) figure out its pixel‐height and vertical center
+        int pixelHeight = (int)(entity.getHeight() * size);
+        int slotCX      = getX() + getWidth()  / 2;
+        int slotCY      = getY() + getHeight() / 2;
+        int bottomY     = slotCY + (pixelHeight / 2);
 
-        // 6) Draw
+        // 7) draw it (with your -10, -10 offsets)
         try {
             InventoryScreen.drawEntity(
                     ctx,
-                    cx,
+                    slotCX,
                     bottomY,
-                    baseSize,
+                    size,
                     -10, -10,
                     entity
             );
-        } catch(Exception ex) {
-            Identity.LOGGER.warn("Failed to render "+ type.getEntityType().getTranslationKey(), ex);
+        } catch (Exception e) {
+            Identity.LOGGER.warn("Failed to render " + type.getEntityType().getTranslationKey(), e);
         }
 
-        // 7) Star & selection overlay
-        if(starred) {
-            ctx.drawTexture(Identity.id("textures/gui/star.png"),
-                    getX(), getY(), 0,0, 15,15, 15,15);
+        // 8) star & outline on top
+        if (starred) {
+            ctx.drawTexture(
+                    Identity.id("textures/gui/star.png"),
+                    getX(), getY(), 0, 0, 15, 15, 15, 15
+            );
         }
-        if(active) {
-            ctx.drawTexture(Identity.id("textures/gui/selected.png"),
+        if (active) {
+            ctx.drawTexture(
+                    Identity.id("textures/gui/selected.png"),
                     getX(), getY(), getWidth(), getHeight(),
-                    0,0, 48,32, 48,32);
+                    0, 0, 48, 32, 48, 32
+            );
         }
     }
 

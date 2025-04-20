@@ -119,7 +119,7 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
                 int air = player.getAir();
 
                 if (!inWater && !inBubbleColumn) {
-                    if (player.age % 20 == 0) { // reduce air every 10 ticks (0.5 sec)
+                    if (player.age % 40 == 0) { // reduce air every 10 ticks (0.5 sec)
                         if (air > 0) {
                             player.setAir(Math.max(air - 15, 0)); // drop by 15 to deplete in ~200 ticks
                         } else {
