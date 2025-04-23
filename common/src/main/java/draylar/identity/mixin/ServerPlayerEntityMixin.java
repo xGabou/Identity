@@ -77,4 +77,16 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
             FlightHelper.grantFlightTo(player);
         }
     }
+    @Inject(method = "onDeath", at = @At("RETURN"))
+    private void identity$handleDeath(DamageSource source, CallbackInfo ci) {
+        if ((Object) this instanceof ServerPlayerEntity player) {
+            // Optional: store anything temporarily if needed
+        }
+    }
+
+    @Inject(method = "copyFrom", at = @At("RETURN"))
+    private void identity$restoreAfterRespawn(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
+        PlayerIdentity.sync((ServerPlayerEntity) (Object) this);
+    }
+
 }

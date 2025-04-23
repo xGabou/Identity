@@ -7,7 +7,7 @@ import draylar.identity.api.model.EntityUpdater;
 import draylar.identity.api.model.EntityUpdaters;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.mixin.accessor.EntityAccessor;
-import draylar.identity.mixin.accessor.LivingEntityAccessor;
+import draylar.identity.compat.LivingEntityCompatAccessor;
 import draylar.identity.mixin.accessor.LivingEntityRendererAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
@@ -50,20 +50,23 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
         super(ctx, model, shadowRadius);
     }
 
-    @Redirect(
+    @Inject(
             method = "render",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/LivingEntityRenderer;render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V")
+            at = @At("HEAD"),
+            cancellable = true
     )
-    private void redirectRender(LivingEntityRenderer renderer, LivingEntity player, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
-        LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) player);
+    private void onRenderInject(AbstractClientPlayerEntity player, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
+        LivingEntity identity = PlayerIdentity.getIdentity(player);
 
-        // sync player data to identity identity
-        if(identity != null) {
+        if (identity != null) {
+            // === SYNC player → identity ===
             LimbAnimatorAccessor target = (LimbAnimatorAccessor) identity.limbAnimator;
             LimbAnimatorAccessor source = (LimbAnimatorAccessor) player.limbAnimator;
+
             target.setPrevSpeed(source.getPrevSpeed());
             target.setSpeed(source.getSpeed());
             target.setPos(source.getPos());
+
             identity.handSwinging = player.handSwinging;
             identity.handSwingTicks = player.handSwingTicks;
             identity.lastHandSwingProgress = player.lastHandSwingProgress;
@@ -80,8 +83,7 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
             ((EntityAccessor) identity).setVehicle(player.getVehicle());
             ((EntityAccessor) identity).setTouchingWater(player.isTouchingWater());
 
-            // phantoms' pitch is inverse for whatever reason
-            if(identity instanceof PhantomEntity) {
+            if (identity instanceof PhantomEntity) {
                 identity.setPitch(-player.getPitch());
                 identity.prevPitch = -player.prevPitch;
             } else {
@@ -89,14 +91,12 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
                 identity.prevPitch = player.prevPitch;
             }
 
-            // equip held items on identity
-            if(IdentityConfig.getInstance().identitiesEquipItems()) {
+            if (IdentityConfig.getInstance().identitiesEquipItems()) {
                 identity.equipStack(EquipmentSlot.MAINHAND, player.getEquippedStack(EquipmentSlot.MAINHAND));
                 identity.equipStack(EquipmentSlot.OFFHAND, player.getEquippedStack(EquipmentSlot.OFFHAND));
             }
 
-            // equip armor items on identity
-            if(IdentityConfig.getInstance().identitiesEquipArmor()) {
+            if (IdentityConfig.getInstance().identitiesEquipArmor()) {
                 identity.equipStack(EquipmentSlot.HEAD, player.getEquippedStack(EquipmentSlot.HEAD));
                 identity.equipStack(EquipmentSlot.CHEST, player.getEquippedStack(EquipmentSlot.CHEST));
                 identity.equipStack(EquipmentSlot.LEGS, player.getEquippedStack(EquipmentSlot.LEGS));
@@ -107,44 +107,51 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
                 ((MobEntity) identity).setAttacking(player.isUsingItem());
             }
 
-            // Assign pose
             identity.setPose(player.getPose());
-
-            // set active hand after configuring held items
             identity.setCurrentHand(player.getActiveHand() == null ? Hand.MAIN_HAND : player.getActiveHand());
-            ((LivingEntityAccessor) identity).callSetLivingFlag(1, player.isUsingItem());
+            ((LivingEntityCompatAccessor) identity).callSetLivingFlag(1, player.isUsingItem());
             identity.getItemUseTime();
-            ((LivingEntityAccessor) identity).callTickActiveItemStack();
+            ((LivingEntityCompatAccessor) identity).callTickActiveItemStack();
 
-            // update identity specific properties
-            EntityUpdater entityUpdater = EntityUpdaters.getUpdater((EntityType<? extends LivingEntity>) identity.getType());
-            if(entityUpdater != null) {
-                entityUpdater.update((PlayerEntity) player, identity);
-            }
-        }
-
-        if(identity != null) {
-            EntityRenderer identityRenderer = MinecraftClient.getInstance().getEntityRenderDispatcher().getRenderer(identity);
-
-            // Sync biped information for stuff like bow drawing animation
-            if(identityRenderer instanceof BipedEntityRenderer) {
-                identity_setBipedIdentityModelPose((AbstractClientPlayerEntity) player, identity, (BipedEntityRenderer) identityRenderer);
+            EntityUpdater updater = EntityUpdaters.getUpdater((EntityType<? extends LivingEntity>) identity.getType());
+            if (updater != null) {
+                updater.update(player, identity);
             }
 
-            identityRenderer.render(identity, f, g, matrixStack, vertexConsumerProvider, i);
+            // === RENDER ===
+            @SuppressWarnings("unchecked")
+            EntityRenderer<? super LivingEntity> renderer =
+                    (EntityRenderer<? super LivingEntity>) MinecraftClient.getInstance()
+                            .getEntityRenderDispatcher().getRenderer(identity);
 
-            // Only render nametags if the server option is true and the entity being rendered is NOT this player/client
-            boolean showThisPlayerNametag = player != MinecraftClient.getInstance().player || IdentityConfig.getInstance().shouldRenderOwnNameTag();
-            if(IdentityConfig.getInstance().showPlayerNametag() && showThisPlayerNametag) {
-                renderLabelIfPresent((AbstractClientPlayerEntity) player, player.getDisplayName(), matrixStack, vertexConsumerProvider, i);
+
+            if (renderer instanceof LivingEntityRenderer<?, ?> livingRenderer) {
+                identity_setBipedIdentityModelPose(player, identity, livingRenderer);
             }
-        } else {
-            super.render((AbstractClientPlayerEntity) player, f, g, matrixStack, vertexConsumerProvider, i);
+
+
+            renderer.render(identity, f, g, matrixStack, vertexConsumerProvider, light);
+
+
+
+            if (IdentityConfig.getInstance().showPlayerNametag() && (player != MinecraftClient.getInstance().player || IdentityConfig.getInstance().shouldRenderOwnNameTag())) {
+                renderLabelIfPresent(player, player.getDisplayName(), matrixStack, vertexConsumerProvider, light);
+            }
+
+            // ⛔ Prevent vanilla render from running
+            ci.cancel();
         }
     }
 
+
+
+
+
+
     private void identity_setBipedIdentityModelPose(AbstractClientPlayerEntity player, LivingEntity identity, LivingEntityRenderer identityRenderer) {
-        BipedEntityModel<?> identityBipedModel = (BipedEntityModel) identityRenderer.getModel();
+        if (!(identityRenderer.getModel() instanceof BipedEntityModel<?> identityBipedModel)) {
+            return; // Don't crash on non-humanoid models like CodModel
+        }
 
         if (identity.isSpectator()) {
             identityBipedModel.setVisible(false);
