@@ -226,51 +226,51 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
 //            }
 //        }
 //    }
-@Inject(method = "travel", at = @At("HEAD"))
-private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci) {
-    if ((Object) this instanceof PlayerEntity player) {
-        LivingEntity identity = PlayerIdentity.getIdentity(player);
-
-        if (identity$isAquatic(identity)) {
-            boolean inWater = player.isTouchingWater();
-            boolean inBubbleColumn = player.getWorld().getBlockState(player.getBlockPos()).isOf(Blocks.BUBBLE_COLUMN);
-
-            if (inWater || inBubbleColumn) {
-                double speedMultiplier = identity.getType() == EntityType.DOLPHIN ? 0.4 : 0.25;
-
-                // Get base 3D input (includes vertical movement key)
-                Vec3d input = movementInput;
-
-                // Add jump/sneak input to Y
-                if (MinecraftClient.getInstance().options.jumpKey.isPressed()) {
-                    input = input.add(0, -1.0, 0);
-                }
-                if (MinecraftClient.getInstance().options.sneakKey.isPressed()) {
-                    input = input.add(0, 1.0, 0);
-                }
-
-                // Apply full 3D rotation based on player's camera
-                Vec3d look = player.getRotationVec(1.0F);
-                Vec3d up = new Vec3d(0, 1, 0);
-                Vec3d right = up.crossProduct(look).normalize();
-                Vec3d adjustedUp = right.crossProduct(look).normalize(); // true up vector
-
-                // Combine axes with 3D projection
-                Vec3d worldInput =
-                        right.multiply(input.x)
-                                .add(adjustedUp.multiply(input.y))
-                                .add(look.multiply(input.z));
-
-                if (worldInput.lengthSquared() > 0.0001) {
-                    player.setVelocity(worldInput.normalize().multiply(speedMultiplier));
-                }
-            }
-
-
-
-        }
-    }
-}
+//@Inject(method = "travel", at = @At("HEAD"))
+//private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci) {
+//    if ((Object) this instanceof PlayerEntity player) {
+//        LivingEntity identity = PlayerIdentity.getIdentity(player);
+//
+//        if (identity$isAquatic(identity)) {
+//            boolean inWater = player.isTouchingWater();
+//            boolean inBubbleColumn = player.getWorld().getBlockState(player.getBlockPos()).isOf(Blocks.BUBBLE_COLUMN);
+//
+//            if (inWater || inBubbleColumn) {
+//                double speedMultiplier = identity.getType() == EntityType.DOLPHIN ? 0.4 : 0.25;
+//
+//                // Get base 3D input (includes vertical movement key)
+//                Vec3d input = movementInput;
+//
+//                // Add jump/sneak input to Y
+//                if (MinecraftClient.getInstance().options.jumpKey.isPressed()) {
+//                    input = input.add(0, -1.0, 0);
+//                }
+//                if (MinecraftClient.getInstance().options.sneakKey.isPressed()) {
+//                    input = input.add(0, 1.0, 0);
+//                }
+//
+//                // Apply full 3D rotation based on player's camera
+//                Vec3d look = player.getRotationVec(1.0F);
+//                Vec3d up = new Vec3d(0, 1, 0);
+//                Vec3d right = up.crossProduct(look).normalize();
+//                Vec3d adjustedUp = right.crossProduct(look).normalize(); // true up vector
+//
+//                // Combine axes with 3D projection
+//                Vec3d worldInput =
+//                        right.multiply(input.x)
+//                                .add(adjustedUp.multiply(input.y))
+//                                .add(look.multiply(input.z));
+//
+//                if (worldInput.lengthSquared() > 0.0001) {
+//                    player.setVelocity(worldInput.normalize().multiply(speedMultiplier));
+//                }
+//            }
+//
+//
+//
+//        }
+//    }
+//}
 
 
 
