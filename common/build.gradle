@@ -8,8 +8,9 @@ dependencies {
 }
 
 architectury {
-    common()
+    common("fabric", "forge")
 }
+
 
 //afterEvaluate {
 //    remapJar {

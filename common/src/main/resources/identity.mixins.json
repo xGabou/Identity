@@ -49,6 +49,7 @@
   ],
   "client": [
     "BipedEntityModelMixin",
+    "ClientPlayerDebugMixin",
     "DrownedOverlayMixin",
     "InGameHudMixin",
     "PlayerEntityRendererMixin",

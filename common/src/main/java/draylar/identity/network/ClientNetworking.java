@@ -72,6 +72,16 @@ public class ClientNetworking implements NetworkHandler {
 
                             // refresh player dimensions/hitbox on client
                             ((DimensionsRefresher) syncTarget).identity_refreshDimensions();
+                            syncTarget.setStepHeight(identity.getStepHeight()); // sync stepping ability
+                            syncTarget.setVelocity(syncTarget.getVelocity().multiply(1, 0, 1)); // reset vertical drag if any
+                            syncTarget.fallDistance = 0.0F; // avoid weird midair fall damage
+                            syncTarget.prevX = syncTarget.getX(); // reset motion interpolation
+                            syncTarget.prevY = syncTarget.getY();
+                            syncTarget.prevZ = syncTarget.getZ();
+                            syncTarget.velocityDirty = true; // force re-sync of movement state
+                            ensureSafePosition(syncTarget);
+                            syncTarget.calculateDimensions(); // Forces recalculation on client
+
                         }
 
                         if(identity != null) {
@@ -82,6 +92,19 @@ public class ClientNetworking implements NetworkHandler {
             }
         });
     }
+    private static void ensureSafePosition(PlayerEntity player) {
+        if (player.isInsideWall()) {
+            double safeY = player.getY();
+            for (int i = 1; i <= 2; i++) {
+                if (!player.getWorld().getBlockState(player.getBlockPos().up(i)).isSolidBlock(player.getWorld(), player.getBlockPos().up(i))) {
+                    safeY = player.getY() + i;
+                    break;
+                }
+            }
+            player.setPosition(player.getX(), safeY, player.getZ());
+        }
+    }
+
 
     public static void handleAbilitySyncPacket(PacketByteBuf packet, NetworkManager.PacketContext context) {
         int cooldown = packet.readInt();

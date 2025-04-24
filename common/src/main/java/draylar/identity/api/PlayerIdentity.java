@@ -1,6 +1,7 @@
 package draylar.identity.api;
 
 import dev.architectury.networking.NetworkManager;
+import draylar.identity.Identity;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.impl.PlayerDataProvider;
 import draylar.identity.network.NetworkHandler;
@@ -11,6 +12,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+
+import java.lang.reflect.Method;
 
 public class PlayerIdentity {
 
@@ -38,8 +42,26 @@ public class PlayerIdentity {
      * @param entity {@link LivingEntity} new identity for this component, or null to clear
      */
     public static boolean updateIdentity(ServerPlayerEntity player, IdentityType<?> type, LivingEntity entity) {
+        // Protect against broken dragons from DragonMounts with null breed
+        if (entity != null && entity.getClass().getName().equals("com.github.kay9.dragonmounts.dragon.TameableDragon")) {
+            try {
+                Method getBreed = entity.getClass().getMethod("getBreed");
+                Object breed = getBreed.invoke(entity);
+                if (breed == null) {
+                    player.sendMessage(Text.literal("This dragon identity is broken (no breed). Identity not applied."), false);
+                    return false;
+                }
+            } catch (Throwable t) {
+                Identity.LOGGER.warn("[Identity] Failed to validate DragonMounts dragon breed", t);
+                return false;
+            }
+        }
+
+        // Proceed as usual
         return ((PlayerDataProvider) player).updateIdentity(entity);
     }
+
+
 
     public static void sync(ServerPlayerEntity player) {
         sync(player, player);

@@ -1,15 +1,15 @@
 package draylar.identity.mixin;
 
-import draylar.identity.Identity;
 import draylar.identity.api.IdentityGranting;
 import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.impl.NearbySongAccessor;
-import draylar.identity.mixin.accessor.LivingEntityAccessor;
+import draylar.identity.compat.LivingEntityCompatAccessor;
 import draylar.identity.registry.IdentityEntityTags;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
@@ -17,7 +17,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.SpiderEntity;
 import net.minecraft.entity.passive.BatEntity;
-import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.registry.tag.FluidTags;
@@ -156,7 +155,7 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
         }
 
 
-        return ((LivingEntityAccessor) instance).identity$getNextAirOnLand(air);
+        return ((LivingEntityCompatAccessor) instance).identity$getNextAirOnLand(air);
     }
 //    @Inject(method = "travel", at = @At("HEAD"))
 //    private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci) {
@@ -204,7 +203,7 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
 //
 //                    // Get vertical input (up/down)
 //                    double y = 0.0;
-//                    if (((LivingEntityAccessor) player).isJumping()) {
+//                    if (((LivingEntityCompatAccessor) player).isJumping()) {
 //                        y += speedMultiplier;
 //                    } else if (player.isSneaking()) {
 //                        y -= speedMultiplier;
@@ -237,23 +236,23 @@ private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci
             boolean inBubbleColumn = player.getWorld().getBlockState(player.getBlockPos()).isOf(Blocks.BUBBLE_COLUMN);
 
             if (inWater || inBubbleColumn) {
-                double speedMultiplier = identity.getType() == EntityType.DOLPHIN ? 0.35 : 0.2;
+                double speedMultiplier = identity.getType() == EntityType.DOLPHIN ? 0.4 : 0.25;
 
                 // Get base 3D input (includes vertical movement key)
                 Vec3d input = movementInput;
 
                 // Add jump/sneak input to Y
-                if (((LivingEntityAccessor) player).isJumping()) {
-                    input = input.add(0, 1.0, 0);
-                }
-                if (player.isSneaking()) {
+                if (MinecraftClient.getInstance().options.jumpKey.isPressed()) {
                     input = input.add(0, -1.0, 0);
+                }
+                if (MinecraftClient.getInstance().options.sneakKey.isPressed()) {
+                    input = input.add(0, 1.0, 0);
                 }
 
                 // Apply full 3D rotation based on player's camera
                 Vec3d look = player.getRotationVec(1.0F);
                 Vec3d up = new Vec3d(0, 1, 0);
-                Vec3d right = look.crossProduct(up).normalize();
+                Vec3d right = up.crossProduct(look).normalize();
                 Vec3d adjustedUp = right.crossProduct(look).normalize(); // true up vector
 
                 // Combine axes with 3D projection
@@ -309,12 +308,12 @@ private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci
 
             if (identity != null) {
                 boolean takesFallDamage = identity.handleFallDamage(fallDistance, damageMultiplier, damageSource);
-                int damageAmount = ((LivingEntityAccessor) identity).callComputeFallDamage(fallDistance, damageMultiplier);
+                int damageAmount = ((LivingEntityCompatAccessor) identity).callComputeFallDamage(fallDistance, damageMultiplier);
 
                 if (takesFallDamage && damageAmount > 0) {
                     LivingEntity.FallSounds fallSounds = identity.getFallSounds();
                     this.playSound(damageAmount > 4 ? fallSounds.big() : fallSounds.small(), 1.0F, 1.0F);
-                    ((LivingEntityAccessor) identity).callPlayBlockFallSound();
+                    ((LivingEntityCompatAccessor) identity).callPlayBlockFallSound();
                     this.damage(getDamageSources().fall(), (float) damageAmount);
                     cir.setReturnValue(true);
                 } else {
@@ -369,7 +368,7 @@ private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci
                 LivingEntity identity = PlayerIdentity.getIdentity(player);
 
                 if(identity != null) {
-                    cir.setReturnValue(((LivingEntityAccessor) identity).callGetEyeHeight(pose, dimensions));
+                    cir.setReturnValue(((LivingEntityCompatAccessor) identity).callGetEyeHeight(pose, dimensions));
                 }
             } catch (Exception ignored) {}
         }

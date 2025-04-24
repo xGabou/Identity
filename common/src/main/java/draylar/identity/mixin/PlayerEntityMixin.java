@@ -4,8 +4,10 @@ import draylar.identity.Identity;
 import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.api.variant.IdentityType;
+import draylar.identity.compat.LivingEntityCompatAccessor;
 import draylar.identity.mixin.accessor.*;
 import draylar.identity.registry.IdentityEntityTags;
+import draylar.identity.util.AttributeSync;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -64,16 +66,15 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
         }
     }
 
-    @Inject(
-            method = "getDimensions",
-            at = @At("HEAD"),
-            cancellable = true
-    )
+    @Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
     private void getDimensions(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir) {
-        LivingEntity entity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
+        LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
 
-        if(entity != null) {
-            cir.setReturnValue(entity.getDimensions(pose));
+        if (identity != null) {
+            // Récupère les dimensions dynamiques de l'identité, selon la pose actuelle du joueur
+            cir.setReturnValue(identity.getDimensions(pose));
+            System.out.println("[DEBUG] Identity dimensions (pose=" + pose + "): " + identity.getDimensions(pose));
+
         }
     }
 
@@ -130,7 +131,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
             LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
 
             if(identity != null) {
-                cir.setReturnValue(((LivingEntityAccessor) identity).callGetActiveEyeHeight(getPose(), getDimensions(getPose())));
+                cir.setReturnValue(((LivingEntityCompatAccessor) identity).callGetActiveEyeHeight(getPose(), getDimensions(getPose())));
             }
         } catch (Exception ignored) {
 
@@ -159,7 +160,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
         LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
 
         if(IdentityConfig.getInstance().useIdentitySounds() && identity != null) {
-            cir.setReturnValue(((LivingEntityAccessor) identity).callGetHurtSound(source));
+            cir.setReturnValue(((LivingEntityCompatAccessor) identity).callGetHurtSound(source));
         }
     }
 
@@ -184,8 +185,8 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
                 // play ambient sound
                 SoundEvent sound = ((MobEntityAccessor) mobIdentity).callGetAmbientSound();
                 if(sound != null) {
-                    float volume = ((LivingEntityAccessor) mobIdentity).callGetSoundVolume();
-                    float pitch = ((LivingEntityAccessor) mobIdentity).callGetSoundPitch();
+                    float volume = ((LivingEntityCompatAccessor) mobIdentity).callGetSoundVolume();
+                    float pitch = ((LivingEntityCompatAccessor) mobIdentity).callGetSoundPitch();
 
                     // By default, players can not hear their own ambient noises.
                     // This is because ambient noises can be very annoying.
@@ -208,7 +209,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
         LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
 
         if(IdentityConfig.getInstance().useIdentitySounds() && identity != null) {
-            cir.setReturnValue(((LivingEntityAccessor) identity).callGetDeathSound());
+            cir.setReturnValue(((LivingEntityCompatAccessor) identity).callGetDeathSound());
         }
     }
 
@@ -375,7 +376,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
             if(identity != null) {
                 identity.setPos(player.getX(), player.getY(), player.getZ());
                 identity.setHeadYaw(player.getHeadYaw());
-                identity.setJumping(((LivingEntityAccessor) player).isJumping());
+                identity.setJumping(((LivingEntityCompatAccessor) player).isJumping());
                 identity.setSprinting(player.isSprinting());
                 identity.setStuckArrowCount(player.getStuckArrowCount());
                 identity.setInvulnerable(true);
@@ -392,8 +393,10 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
 
                 ((EntityAccessor) identity).identity_callSetFlag(7, player.isFallFlying());
 
-                ((LivingEntityAccessor) identity).callTickActiveItemStack();
+                ((LivingEntityCompatAccessor) identity).callTickActiveItemStack();
                 PlayerIdentity.sync((ServerPlayerEntity) player); // safe cast - context is server world
+                AttributeSync.syncMaxHealth((ServerPlayerEntity) player);
+
             }
         }
     }

@@ -1,5 +1,6 @@
 package draylar.identity.mixin.accessor;
 
+import draylar.identity.compat.LivingEntityCompatAccessor;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
@@ -10,7 +11,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(LivingEntity.class)
-public interface LivingEntityAccessor {
+public interface LivingEntityAccessor extends LivingEntityCompatAccessor {
+
 
     @Accessor
     boolean isJumping();
