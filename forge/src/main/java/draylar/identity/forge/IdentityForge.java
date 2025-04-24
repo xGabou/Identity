@@ -2,8 +2,6 @@ package draylar.identity.forge;
 
 import dev.architectury.platform.Platform;
 import draylar.identity.Identity;
-import draylar.identity.compat.LivingEntityCompatProvider;
-import draylar.identity.forge.compat.ForgeLivingEntityCompatProvider;
 import draylar.identity.forge.config.ConfigLoader;
 import draylar.identity.forge.config.IdentityForgeConfig;
 //import draylar.identity.forge.mixin.accessor.ForgeLivingEntityAccessorCompat;
