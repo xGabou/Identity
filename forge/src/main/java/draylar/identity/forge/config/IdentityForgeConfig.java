@@ -40,7 +40,7 @@ public class IdentityForgeConfig extends IdentityConfig {
     public boolean logCommands = true;
     public float flySpeed = 0.05f;
     public boolean killForIdentity = false;
-    public int requiredKillsForIdentity = 50;
+    public int requiredKillsForIdentity = 1;
     public boolean wardenIsBlinded = true;
     public boolean wardenBlindsNearby = true;
     public String forcedIdentity = null;
