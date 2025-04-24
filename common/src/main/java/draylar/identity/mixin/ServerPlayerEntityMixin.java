@@ -6,6 +6,7 @@ import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.PlayerUnlocks;
 import draylar.identity.api.FlightHelper;
 import draylar.identity.api.platform.IdentityConfig;
+import draylar.identity.util.PlayerDebugUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -14,6 +15,7 @@ import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -67,16 +69,20 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     )
     private void onSpawn(CallbackInfo ci) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-        if(Identity.hasFlyingPermissions(player)) {
-            if(!FlightHelper.hasFlight(player)) {
+
+        // Force dimension recalculation (important!)
+        this.calculateDimensions();
+
+        // Réactiver le vol si nécessaire
+        if (Identity.hasFlyingPermissions(player)) {
+            if (!FlightHelper.hasFlight(player)) {
                 FlightHelper.grantFlightTo(player);
                 getAbilities().setFlySpeed(IdentityConfig.getInstance().flySpeed());
                 sendAbilitiesUpdate();
             }
-
-            FlightHelper.grantFlightTo(player);
         }
     }
+
     @Inject(method = "onDeath", at = @At("RETURN"))
     private void identity$handleDeath(DamageSource source, CallbackInfo ci) {
         if ((Object) this instanceof ServerPlayerEntity player) {
@@ -88,5 +94,9 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     private void identity$restoreAfterRespawn(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
         PlayerIdentity.sync((ServerPlayerEntity) (Object) this);
     }
+//    @Inject(method = "tick", at = @At("TAIL"))
+//    private void onServerTick(CallbackInfo ci) {
+//        PlayerDebugUtils.logPlayerDebug((PlayerEntity)(Object)this, "server");
+//    }
 
 }

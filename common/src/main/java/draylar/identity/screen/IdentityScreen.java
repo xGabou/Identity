@@ -11,6 +11,7 @@ import draylar.identity.screen.widget.EntityWidget;
 import draylar.identity.screen.widget.HelpWidget;
 import draylar.identity.screen.widget.PlayerWidget;
 import draylar.identity.screen.widget.SearchWidget;
+import draylar.identity.util.IdentityCompatUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -19,6 +20,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.Window;
 import net.minecraft.text.Text;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -71,9 +73,17 @@ public class IdentityScreen extends Screen {
 
         // preload entities
         for (IdentityType<?> type : IdentityType.getAllTypes(client.world)) {
+            // Check by type before instantiating
+            if (IdentityCompatUtils.isBlacklistedEntityType(type.getEntityType())) {
+                continue;
+            }
+
             LivingEntity e = (LivingEntity) type.create(client.world);
             renderEntities.put(type, e);
         }
+
+
+
 
         // filter + sort unlocked
         unlocked.addAll(renderEntities.keySet().stream()

@@ -66,16 +66,15 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
         }
     }
 
-    @Inject(
-            method = "getDimensions",
-            at = @At("HEAD"),
-            cancellable = true
-    )
+    @Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
     private void getDimensions(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir) {
-        LivingEntity entity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
+        LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
 
-        if(entity != null) {
-            cir.setReturnValue(entity.getDimensions(pose));
+        if (identity != null) {
+            // Récupère les dimensions dynamiques de l'identité, selon la pose actuelle du joueur
+            cir.setReturnValue(identity.getDimensions(pose));
+            System.out.println("[DEBUG] Identity dimensions (pose=" + pose + "): " + identity.getDimensions(pose));
+
         }
     }
 

@@ -243,10 +243,10 @@ private void identity$handleAquaticMovement(Vec3d movementInput, CallbackInfo ci
 
                 // Add jump/sneak input to Y
                 if (MinecraftClient.getInstance().options.jumpKey.isPressed()) {
-                    input = input.add(0, 1.0, 0);
+                    input = input.add(0, -1.0, 0);
                 }
                 if (MinecraftClient.getInstance().options.sneakKey.isPressed()) {
-                    input = input.add(0, -1.0, 0);
+                    input = input.add(0, 1.0, 0);
                 }
 
                 // Apply full 3D rotation based on player's camera
