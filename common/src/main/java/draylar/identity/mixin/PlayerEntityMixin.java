@@ -73,8 +73,6 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
         if (identity != null) {
             // Récupère les dimensions dynamiques de l'identité, selon la pose actuelle du joueur
             cir.setReturnValue(identity.getDimensions(pose));
-            System.out.println("[DEBUG] Identity dimensions (pose=" + pose + "): " + identity.getDimensions(pose));
-
         }
     }
 
