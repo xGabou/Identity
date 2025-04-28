@@ -1,5 +1,6 @@
 package draylar.identity.util;
 
+import dev.architectury.platform.Platform;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
@@ -17,5 +18,11 @@ public class IdentityCompatUtils {
         // Blacklist le dragon de Dragon Mounts
         return id.getNamespace().equals("dragonmounts") &&
                 id.getPath().equals("dragon");
+    }
+    public static boolean isAlexsMobsLoaded() {
+        return Platform.isModLoaded("alexsmobs");
+    }
+    public static boolean isNaturalistLoaded() {
+        return Platform.isModLoaded("naturalist");
     }
 }

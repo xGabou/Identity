@@ -55,6 +55,11 @@ public class IdentityScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        // 🔥 Fix here: clear old stuff
+        ((ScreenAccessor) this).getSelectables().removeIf(w -> w instanceof EntityWidget);
+        children().removeIf(w -> w instanceof EntityWidget);
+        entityWidgets.clear();
+        scrollY = 0;
 
         // instantiate header widgets
         searchBar    = createSearchBar();
@@ -244,32 +249,32 @@ public class IdentityScreen extends Screen {
     }
     @Override
     public void resize(MinecraftClient client, int width, int height) {
-        // update this.width/this.height and *do not* clear children() for us
         super.resize(client, width, height);
 
-        // 1) Dispose old entities
-        for (EntityWidget w : entityWidgets) {
-            w.dispose();
-        }
-
-        // 2) Remove them from the screen
-        //   (a) from the selectables list:
-        ((ScreenAccessor) this).getSelectables().removeIf(w -> w instanceof EntityWidget);
-        //   (b) from the children() (drawables) list:
-        children().removeIf(w -> w instanceof EntityWidget);
-
-        // 3) Clear our backing list
-        entityWidgets.clear();
-
-        // 4) Reset scroll
+        clearChildren();
         scrollY = 0;
 
-        // 5) Re‑populate the grid at the new size
         ClientPlayerEntity player = client.player;
         if (player != null) {
+            // FULL FIX HERE:
+            renderEntities.clear(); // 🔥 Clear old render entities!
+            for (IdentityType<?> type : IdentityType.getAllTypes(client.world)) {
+                if (IdentityCompatUtils.isBlacklistedEntityType(type.getEntityType())) continue;
+                LivingEntity e = (LivingEntity) type.create(client.world);
+                renderEntities.put(type, e);
+            }
+
+            unlocked.clear();
+            unlocked.addAll(renderEntities.keySet().stream()
+                    .filter(t -> PlayerUnlocks.has(player, t) || player.isCreative())
+                    .collect(Collectors.toList()));
+            unlocked.sort((a, b) -> PlayerFavorites.has(player, a) ? -1 : 1);
+
             populateEntities(player, unlocked);
         }
     }
+
+
 
 
     @Override
@@ -297,12 +302,20 @@ public class IdentityScreen extends Screen {
 
     @Override
     public void close() {
-        entityWidgets.forEach(EntityWidget::dispose);
+        entityWidgets.forEach(
+                EntityWidget::dispose);
         super.close();
     }
 
     @Override
-    public void clearChildren() { /* no-op */ }
+    public void clearChildren() {
+        // only remove our EntityWidgets, keep other important buttons
+        ((ScreenAccessor) this).getSelectables().removeIf(w -> w instanceof EntityWidget);
+        children().removeIf(w -> w instanceof EntityWidget);
+        entityWidgets.clear();
+        scrollY = 0;
+    }
+
 
     @Override
     public boolean shouldPause() {

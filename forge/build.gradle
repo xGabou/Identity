@@ -4,11 +4,12 @@ plugins {
 
 loom {
     forge {
-        mixinConfigs = [ "identity-forge.mixins.json", "identity.mixins.json" ]
+        mixinConfigs = [
+                "identity-forge.mixins.json",
+                "identity.mixins.json"
+        ]
     }
 }
-
-
 
 architectury {
     platformSetupLoomIde()
@@ -27,6 +28,10 @@ dependencies {
     forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
     modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 
+    // Forge-only optional dependencies
+    modCompileOnly "curse.maven:alexs-mobs-426558:5698791"
+    modCompileOnly "curse.maven:citadel-331936:5633260"
+
     common(project(path: ":common", configuration: "namedElements")) { transitive = false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
 }
@@ -35,31 +40,31 @@ processResources {
     inputs.property "version", project.version.toString()
 
     filesMatching("META-INF/mods.toml") {
-        expand "version": project.version.toString()
+        expand("version": project.version.toString())
     }
 }
 
 shadowJar {
-    exclude "fabric.mod.json"
     configurations = [project.configurations.shadowCommon]
-    archiveClassifier = "dev-shadow"
+    archiveClassifier.set("dev-shadow")
+    exclude("fabric.mod.json")
 }
 
 remapJar {
-    input.set shadowJar.archiveFile
-    dependsOn shadowJar
-    archiveClassifier = "forge"
+    input.set(shadowJar.archiveFile)
+    dependsOn(shadowJar)
+    archiveClassifier.set("forge")
 }
 
 jar {
-    archiveClassifier = "dev"
+    archiveClassifier.set("dev")
 }
 
 sourcesJar {
-    duplicatesStrategy 'exclude'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     def commonSources = project(":common").sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
+    dependsOn(commonSources)
+    from(commonSources.archiveFile.map { zipTree(it) })
 }
 
 components.java {
@@ -74,10 +79,5 @@ publishing {
             artifactId = rootProject.archives_base_name + "-" + project.name
             from components.java
         }
-    }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        // Add repositories to publish to here.
     }
 }

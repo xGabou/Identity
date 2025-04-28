@@ -2,10 +2,10 @@ package draylar.identity.forge;
 
 import dev.architectury.platform.Platform;
 import draylar.identity.Identity;
+import draylar.identity.forge.ability.AlexsMobsAbilityRegistry;
 import draylar.identity.forge.config.ConfigLoader;
 import draylar.identity.forge.config.IdentityForgeConfig;
 //import draylar.identity.forge.mixin.accessor.ForgeLivingEntityAccessorCompat;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod("identity")
@@ -15,6 +15,8 @@ public class IdentityForge {
 
     public IdentityForge() {
         new Identity().initialize();
+        AlexsMobsAbilityRegistry.init();
+
 //        if (ModList.get().isLoaded("bjornlib")) {
 //            ForgeLivingEntityCompatProvider.init(); // qui utilise Bjorn
 //        }

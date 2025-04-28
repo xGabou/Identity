@@ -18,12 +18,12 @@ import net.minecraft.text.Text;
 public class EntityWidget<T extends LivingEntity> extends PressableWidget {
     public static int VERTICAL_OFFSET = 30;
     private static int BASE_Y_OFFSET = 10;
-    private final IdentityType<T> type;
-    private final T              entity;
-    private final int            size;
+    private  IdentityType<T> type;
+    private  T              entity;
+    private  int            size;
     private       boolean        active;
     private       boolean        starred;
-    private final IdentityScreen parent;
+    private  IdentityScreen parent;
 
     public EntityWidget(
             int x, int y, int width, int height,
@@ -145,9 +145,17 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         this.active = a;
     }
 
+
     public void dispose() {
         if (entity != null) {
-            entity.discard();
+            try {
+                entity.discard();
+            } catch (Exception ignored) { }
+            entity = null;
         }
+        type = null;
+        parent = null;
     }
+
+
 }
