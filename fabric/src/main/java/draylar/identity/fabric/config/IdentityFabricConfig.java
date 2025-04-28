@@ -1,6 +1,7 @@
 package draylar.identity.fabric.config;
 
 import draylar.identity.api.platform.IdentityConfig;
+import draylar.identity.fabric.IdentityFabric;
 import draylar.omegaconfig.api.Comment;
 import draylar.omegaconfig.api.Config;
 import draylar.omegaconfig.api.Syncing;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class IdentityFabricConfig extends IdentityConfig implements Config {
+
 
     @Comment(value = "Whether an overlay message appears above the hotbar when a new identity is unlocked.")
     public boolean overlayIdentityUnlocks = true;
@@ -143,6 +145,11 @@ public class IdentityFabricConfig extends IdentityConfig implements Config {
     @Override
     public String getExtension() {
         return "json5";
+    }
+
+    @Override
+    public int getConfigVersion() {
+        return IdentityFabric.CONFIG_VERSION;
     }
 
     @Override

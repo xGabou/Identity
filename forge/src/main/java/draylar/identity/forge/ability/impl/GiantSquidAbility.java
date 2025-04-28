@@ -1,6 +1,6 @@
 
 package draylar.identity.forge.ability.impl;
-import com.github.alexthe666.alexsmobs.entity.EntityVoidWorm;
+import com.github.alexthe666.alexsmobs.entity.EntityGiantSquid;
 
 import draylar.identity.ability.IdentityAbility;
 import draylar.identity.util.AbilityUtils;
@@ -9,14 +9,14 @@ import net.minecraft.item.Items;
 import net.minecraft.item.Item;
 import net.minecraft.world.World;
 
-public class VoidWormAbility extends IdentityAbility<EntityVoidWorm> {
+public class GiantSquidAbility extends IdentityAbility<EntityGiantSquid> {
     @Override
-    public void onUse(PlayerEntity player, EntityVoidWorm identity, World world) {
-        AbilityUtils.dashForward(player, 2.5D);
+    public void onUse(PlayerEntity player, EntityGiantSquid identity, World world) {
+        AbilityUtils.waterDash(player, 1.5D);
     }
 
     @Override
     public Item getIcon() {
-        return Items.ENDER_PEARL;
+        return Items.INK_SAC;
     }
 }

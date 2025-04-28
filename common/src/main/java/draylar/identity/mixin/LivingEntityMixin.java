@@ -96,15 +96,9 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
     }
     @Unique
     private boolean identity$isAquatic(LivingEntity identity) {
-        if (identity == null) return false;
-
-        SpawnGroup group = identity.getType().getSpawnGroup();
-
-        return switch (group) {
-            case WATER_CREATURE, WATER_AMBIENT, UNDERGROUND_WATER_CREATURE -> true;
-            default -> false;
-        };
+        return identity != null && identity.canBreatheInWater();
     }
+
 
     @Inject(method = "baseTick", at = @At("HEAD"))
     private void identity$suffocateAquaticIdentities(CallbackInfo ci) {

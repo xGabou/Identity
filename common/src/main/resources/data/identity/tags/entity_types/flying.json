@@ -10,6 +10,19 @@
     "minecraft:ender_dragon",
     "minecraft:wither",
     "minecraft:vex",
-    "minecraft:allay"
+    "minecraft:allay",
+    "alexsmobs:hummingbird",
+    "alexsmobs:blue_jay",
+    "alexsmobs:crow",
+    "alexsmobs:seagull",
+    "alexsmobs:shoebill",
+    "alexsmobs:toucan",
+    "alexsmobs:bald_eagle",
+    "alexsmobs:dragonfly",
+    "alexsmobs:sunbird",
+    "alexsmobs:spectre",
+    "alexsmobs:soul_vulture",
+    "alexsmobs:flutter",
+    "alexsmobs:potoo"
   ]
 }

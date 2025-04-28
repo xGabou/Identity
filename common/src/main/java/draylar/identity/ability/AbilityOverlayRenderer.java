@@ -30,7 +30,7 @@ public class AbilityOverlayRenderer {
             if(identity == null) {
                 return;
             }
-
+//TODO make this tick less often
             IdentityAbility<? extends LivingEntity> identityAbility = AbilityRegistry.get(identity.getType());
 
             if(identityAbility == null) {

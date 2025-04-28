@@ -7,6 +7,7 @@ import net.fabricmc.api.ModInitializer;
 
 public class IdentityFabric implements ModInitializer {
 
+    public static final int CONFIG_VERSION = 2;
     public static final IdentityFabricConfig CONFIG = OmegaConfig.register(IdentityFabricConfig.class);
 
     @Override

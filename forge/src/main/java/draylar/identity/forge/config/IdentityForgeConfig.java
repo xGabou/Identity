@@ -11,6 +11,7 @@ import java.util.Map;
 
 public class IdentityForgeConfig extends IdentityConfig {
 
+    private final int configVersion = IdentityForge.CONFIG_VERSION;
     public boolean overlayIdentityUnlocks = true;
     public boolean overlayIdentityRevokes = true;
     public boolean revokeIdentityOnDeath = false;
@@ -64,11 +65,52 @@ public class IdentityForgeConfig extends IdentityConfig {
             put("minecraft:snow_golem", 10);
             put("minecraft:witch", 200);
             put("minecraft:evoker", 10);
+            if (IdentityForge.isAlexsMobsLoaded) {
+                put("alexsmobs:grizzly_bear", 20);
+                put("alexsmobs:guster", 40);
+                put("alexsmobs:dropbear", 60);
+                put("alexsmobs:sunbird", 60);
+                put("alexsmobs:void_worm", 80);
+                put("alexsmobs:komodo_dragon", 30);
+                put("alexsmobs:skunk", 100);
+                put("alexsmobs:crow", 20);
+                put("alexsmobs:orca", 60);
+                put("alexsmobs:gorilla", 40);
+                put("alexsmobs:roadrunner", 30);
+                put("alexsmobs:soul_vulture", 60);
+                put("alexsmobs:mimicube", 80);
+                put("alexsmobs:bald_eagle", 20);
+                put("alexsmobs:bone_serpent", 40);
+                put("alexsmobs:crimson_mosquito", 30);
+                put("alexsmobs:emu", 30);
+                put("alexsmobs:enderiophage", 60);
+                put("alexsmobs:fly", 10);
+                put("alexsmobs:giant_squid", 50);
+                put("alexsmobs:kangaroo", 30);
+                put("alexsmobs:raccoon", 100);
+                put("alexsmobs:rattlesnake", 40);
+                put("alexsmobs:snow_leopard", 40);
+                put("alexsmobs:spectre", 50);
+                put("alexsmobs:tarantula_hawk", 50);
+                put("alexsmobs:tasmanian_devil", 40);
+                put("alexsmobs:tiger", 40);
+                put("alexsmobs:warped_mosco", 70);
+                put("alexsmobs:elephant", 50);
+                put("alexsmobs:crocodile", 40);
+                put("alexsmobs:moose", 50);
+                put("alexsmobs:hummingbird", 15);
+            }
+
         }
     };
 
     public static IdentityConfig getInstance() {
         return IdentityForge.CONFIG;
+    }
+
+    @Override
+    public int getConfigVersion() {
+        return configVersion;
     }
 
     @Override

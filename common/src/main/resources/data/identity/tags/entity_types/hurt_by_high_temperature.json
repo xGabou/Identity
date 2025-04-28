@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "minecraft:snow_golem"
+    "minecraft:snow_golem",
+    "alexsmobs:froststalker"
   ]
 }

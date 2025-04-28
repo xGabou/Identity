@@ -12,6 +12,8 @@ public abstract class IdentityConfig {
         throw new AssertionError();
     }
 
+    public abstract int getConfigVersion();
+
     public abstract boolean enableFlight();
 
     public abstract List<String> advancementsRequiredForFlight();

@@ -28,9 +28,13 @@ dependencies {
     forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
     modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 
-    // Forge-only optional dependencies
+    // Forge-only optional dependencies for compilation
     modCompileOnly "curse.maven:alexs-mobs-426558:5698791"
     modCompileOnly "curse.maven:citadel-331936:5633260"
+
+    // Forge-only runtime dependencies for development
+    modRuntimeOnly "curse.maven:alexs-mobs-426558:5698791"
+    modRuntimeOnly "curse.maven:citadel-331936:5633260"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive = false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }

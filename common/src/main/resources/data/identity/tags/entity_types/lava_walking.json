@@ -1,6 +1,8 @@
 {
   "replace": false,
   "values": [
-    "minecraft:strider"
+    "minecraft:strider",
+    "alexsmobs:bone_serpent",
+    "alexsmobs:warped_toad"
   ]
 }

@@ -1,6 +1,6 @@
 
 package draylar.identity.forge.ability.impl;
-import com.github.alexthe666.alexsmobs.entity.EntityVoidWorm;
+import com.github.alexthe666.alexsmobs.entity.EntityGorilla;
 
 import draylar.identity.ability.IdentityAbility;
 import draylar.identity.util.AbilityUtils;
@@ -9,14 +9,14 @@ import net.minecraft.item.Items;
 import net.minecraft.item.Item;
 import net.minecraft.world.World;
 
-public class VoidWormAbility extends IdentityAbility<EntityVoidWorm> {
+public class GorillaAbility extends IdentityAbility<EntityGorilla> {
     @Override
-    public void onUse(PlayerEntity player, EntityVoidWorm identity, World world) {
-        AbilityUtils.dashForward(player, 2.5D);
+    public void onUse(PlayerEntity player, EntityGorilla identity, World world) {
+        AbilityUtils.knockbackNearbyEntities(player, 3.0F, 1.5D);
     }
 
     @Override
     public Item getIcon() {
-        return Items.ENDER_PEARL;
+        return Items.BEEF;
     }
 }
