@@ -71,17 +71,7 @@ public class Identity {
         if(identity == null) {
             return hasPermission;
         }
-
-        if(IdentityConfig.getInstance().enableFlight() && isAbleToFly(identity)) {
-
-            // requires at least 1 advancement, check if player has them
-            hasPermission =true;
-
-
-            return hasPermission;
-        }
-
-        return hasPermission;
+        return IdentityConfig.getInstance().enableFlight() && isAbleToFly(identity);
     }
 
     private static boolean isAbleToFly(LivingEntity identity) {
