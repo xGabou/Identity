@@ -19,7 +19,7 @@ public class ForgeClientEvents {
             PlayerEntity player = mc.player;
             if(player == null) return ;
 
-            if (player.isSubmergedInWater() && Identity.isAquatic(PlayerIdentity.getIdentity(player))) {
+            if (player.isSubmergedInWater() && Identity.identity$isAquatic(PlayerIdentity.getIdentity(player))) {
                 event.setCanceled(true);
             }
         }

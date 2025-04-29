@@ -66,8 +66,11 @@ public class Identity {
 
     public static boolean hasFlyingPermissions(ServerPlayerEntity player) {
         LivingEntity identity = PlayerIdentity.getIdentity(player);
+        if(identity == null) {
+            return false;
+        }
 
-        if(identity != null && IdentityConfig.getInstance().enableFlight() && identity.getType().isIn(IdentityEntityTags.FLYING)) {
+        if(IdentityConfig.getInstance().enableFlight() && isAbleToFly(identity)) {
             List<String> requiredAdvancements = IdentityConfig.getInstance().advancementsRequiredForFlight();
 
             // requires at least 1 advancement, check if player has them
@@ -93,8 +96,50 @@ public class Identity {
         return false;
     }
 
-    public static boolean isAquatic(LivingEntity entity) {
-        return entity instanceof WaterCreatureEntity || entity instanceof GuardianEntity;
+    private static boolean isAbleToFly(LivingEntity identity) {
+        if (identity == null) {
+            return false;
+        }
+
+        EntityType<?> type = identity.getType();
+        String idString = EntityType.getId(type).toString();
+        IdentityConfig config = IdentityConfig.getInstance();
+
+        // REMOVE > ADD > TAG priority
+        if (config.removedFlyingEntities().contains(idString)) {
+            return false;
+        }
+
+        if (config.extraFlyingEntities().contains(idString)) {
+            return true;
+        }
+
+        return type.isIn(IdentityEntityTags.FLYING);
+    }
+
+
+    public static boolean identity$isAquatic(LivingEntity identity) {
+        if (identity == null) {
+            return false;
+        }
+
+        EntityType<?> type = identity.getType();
+        Identifier id = EntityType.getId(type);
+        String idString = id.toString();
+
+        IdentityConfig config =  IdentityConfig.getInstance();
+
+        // REMOVE > ADD > TAG priority
+        if (config.removedAquaticEntities().contains(idString)) {
+            return false; // Player requested this mob NOT be aquatic
+        }
+
+        if (config.extraAquaticEntities().contains(idString)) {
+            return true; // Player manually added it
+        }
+
+        // Otherwise, fallback to normal tag detection
+        return type.isIn(IdentityEntityTags.BREATHE_UNDERWATER);
     }
 
     public static int getCooldown(EntityType<?> type) {

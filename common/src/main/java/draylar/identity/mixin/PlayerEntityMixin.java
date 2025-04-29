@@ -89,7 +89,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
         LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
 
         if(identity != null) {
-            if(Identity.isAquatic(identity)) {
+            if(Identity.identity$isAquatic(identity)) {
                 int air = this.getAir();
 
                 // copy of WaterCreatureEntity#tickWaterBreathingAir

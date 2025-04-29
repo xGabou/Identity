@@ -33,6 +33,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static draylar.identity.Identity.identity$isAquatic;
+
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity implements NearbySongAccessor {
 
@@ -94,10 +96,11 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
 
         return this.hasStatusEffect(StatusEffects.SLOW_FALLING);
     }
-    @Unique
-    private boolean identity$isAquatic(LivingEntity identity) {
-        return identity != null && identity.canBreatheInWater();
-    }
+//    @Unique
+//    private boolean identity$isAquatic(LivingEntity identity) {
+//        return identity != null && identity.getType().isIn(IdentityEntityTags.BREATHE_UNDERWATER);
+//    }
+
 
 
     @Inject(method = "baseTick", at = @At("HEAD"))

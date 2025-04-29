@@ -13,6 +13,7 @@ public class IdentityEntityTags {
     public static final TagKey<EntityType<?>> SLOW_FALLING = register("slow_falling");
     public static final TagKey<EntityType<?>> WOLF_PREY = register("wolf_prey");
     public static final TagKey<EntityType<?>> FOX_PREY = register("fox_prey");
+    public static final TagKey<EntityType<?>> BREATHE_UNDERWATER = register("breathe_underwater");
     public static final TagKey<EntityType<?>> HURT_BY_HIGH_TEMPERATURE = register("hurt_by_high_temperature");
     public static final TagKey<EntityType<?>> RAVAGER_RIDING = register("ravager_riding");
     public static final TagKey<EntityType<?>> PIGLIN_FRIENDLY = register("piglin_friendly");

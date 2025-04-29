@@ -3,6 +3,10 @@ package draylar.identity.forge.config;
 
 import draylar.identity.forge.IdentityForge;
 import draylar.identity.api.platform.IdentityConfig;
+import draylar.identity.registry.IdentityEntityTags;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,8 +14,14 @@ import java.util.List;
 import java.util.Map;
 
 public class IdentityForgeConfig extends IdentityConfig {
+    private  List<String> extraAquaticEntities = new ArrayList<>();
+    private  List<String> removedAquaticEntities = new ArrayList<>();
+    private  List<String> extraFlyingEntities = new ArrayList<>();
+    private  List<String> removedFlyingEntities = new ArrayList<>();
 
-    private final int configVersion = IdentityForge.CONFIG_VERSION;
+
+    private int configVersion = IdentityForge.CONFIG_VERSION;
+
     public boolean overlayIdentityUnlocks = true;
     public boolean overlayIdentityRevokes = true;
     public boolean revokeIdentityOnDeath = false;
@@ -287,4 +297,28 @@ public class IdentityForgeConfig extends IdentityConfig {
     public String getForcedIdentity() {
         return forcedIdentity;
     }
+
+
+
+    @Override
+    public List<String> extraAquaticEntities() {
+        return extraAquaticEntities;
+    }
+
+    @Override
+    public List<String> removedAquaticEntities() {
+        return removedAquaticEntities;
+    }
+
+    @Override
+    public List<String> extraFlyingEntities() {
+        return extraFlyingEntities;
+    }
+
+    @Override
+    public List<String> removedFlyingEntities() {
+        return removedFlyingEntities;
+    }
+
+
 }

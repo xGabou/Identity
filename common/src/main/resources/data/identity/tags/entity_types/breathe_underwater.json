@@ -1,0 +1,30 @@
+{
+  "replace": false,
+  "values": [
+
+    "minecraft:cod",
+    "minecraft:salmon",
+    "minecraft:pufferfish",
+    "minecraft:tropical_fish",
+    "minecraft:squid",
+    "minecraft:glow_squid",
+    "minecraft:guardian",
+    "minecraft:elder_guardian",
+    "minecraft:axolotl",
+    "minecraft:dolphin",
+    "minecraft:turtle",
+
+
+    "alexsmobs:lobster",
+    "alexsmobs:mantis_shrimp",
+    "alexsmobs:blobfish",
+    "alexsmobs:sunfish",
+    "alexsmobs:mimic_octopus",
+    "alexsmobs:leafy_seadragon",
+    "alexsmobs:cosmaw",
+    "alexsmobs:cachalot_whale",
+    "alexsmobs:catfish",
+    "alexsmobs:giant_squid",
+    "alexsmobs:manatee"
+  ]
+}

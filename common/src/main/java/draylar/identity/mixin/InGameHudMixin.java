@@ -28,7 +28,7 @@ public abstract class InGameHudMixin {
         LivingEntity identity = PlayerIdentity.getIdentity(player);
 
         if(identity != null) {
-            if(Identity.isAquatic(identity) || identity.getType().isIn(IdentityEntityTags.UNDROWNABLE) && player.isSubmergedIn(FluidTags.WATER)) {
+            if(Identity.identity$isAquatic(identity) || identity.getType().isIn(IdentityEntityTags.UNDROWNABLE) && player.isSubmergedIn(FluidTags.WATER)) {
                 return FluidTags.LAVA;    // will cause isSubmergedIn to return false, preventing air render
             }
         }

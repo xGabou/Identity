@@ -83,4 +83,13 @@ public abstract class IdentityConfig {
     public abstract boolean wardenBlindsNearby();
 
     public abstract String getForcedIdentity();
+    // Allow players to add entities to aquatic detection manually
+    public abstract List<String> extraAquaticEntities();
+
+    public abstract List<String> removedAquaticEntities();
+
+    public abstract List<String> extraFlyingEntities();
+
+    public abstract List<String> removedFlyingEntities();
+
 }

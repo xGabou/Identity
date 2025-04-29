@@ -16,7 +16,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class IdentityForge {
 
     public static final boolean isAlexsMobsLoaded = IdentityCompatUtils.isAlexsMobsLoaded();
-    public static final int CONFIG_VERSION = 2;
+    public static final int CONFIG_VERSION = 3;
     public static final IdentityForgeConfig CONFIG = ConfigLoader.read();
 
     public IdentityForge() {

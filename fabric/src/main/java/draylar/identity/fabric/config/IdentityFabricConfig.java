@@ -113,6 +113,37 @@ public class IdentityFabricConfig extends IdentityConfig implements Config {
 
     @Comment(value = "The Identity type that is forced on all players")
     public String forcedIdentity = null;
+    @Comment(value = "List of additional entities considered aquatic even if not tagged.")
+    public List<String> extraAquaticEntities = new ArrayList<>();
+
+    @Comment(value = "List of entities to forcibly exclude from being considered aquatic.")
+    public List<String> removedAquaticEntities = new ArrayList<>();
+
+    @Comment(value = "List of entities to forcibly exclude from being considered flying.")
+    public List<String> removedFlyingEntities = new ArrayList<>();
+    @Comment(value = "List of entities to forcibly include as flying.")
+    public List<String> extraFlyingEntities = new ArrayList<>();
+
+    @Override
+    public List<String> extraAquaticEntities() {
+        return extraAquaticEntities;
+    }
+
+    @Override
+    public List<String> removedAquaticEntities() {
+        return removedAquaticEntities;
+    }
+
+    @Override
+    public List<String> extraFlyingEntities() {
+        return extraFlyingEntities;
+    }
+
+    @Override
+    public List<String> removedFlyingEntities() {
+        return removedFlyingEntities;
+    }
+
 
     @Comment(value = "An override map for requiredKillsForIdentity for specific entity types.")
     public Map<String, Integer> requiredKillsByType = new HashMap<>() {
