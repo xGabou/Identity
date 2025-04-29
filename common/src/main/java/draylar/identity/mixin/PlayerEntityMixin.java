@@ -2,6 +2,7 @@ package draylar.identity.mixin;
 
 import draylar.identity.Identity;
 import draylar.identity.api.PlayerIdentity;
+import draylar.identity.api.SafeTagManager;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.compat.LivingEntityCompatAccessor;
@@ -285,39 +286,28 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
         PlayerEntity player = (PlayerEntity) (Object) this;
         LivingEntity identity = PlayerIdentity.getIdentity(player);
 
-        if(!player.getWorld().isClient && !player.isCreative() && !player.isSpectator()) {
-            // check if the player is identity
-            if(identity != null) {
+        if (!player.getWorld().isClient && !player.isCreative() && !player.isSpectator()) {
+            if (identity != null) {
                 EntityType<?> type = identity.getType();
 
-                // check if the player's current identity burns in sunlight
-                if(type.isIn(IdentityEntityTags.BURNS_IN_DAYLIGHT)) {
+                if (type.isIn(IdentityEntityTags.BURNS_IN_DAYLIGHT) || SafeTagManager.isCustomBurnsInDaylight(type)) {
                     boolean bl = this.isInDaylight();
-                    if(bl) {
 
-                        // Can't burn in the rain
-                        if(player.getWorld().isRaining()) {
-                            return;
-                        }
+                    if (bl) {
+                        if (player.getWorld().isRaining()) return;
 
-                        // check for helmets to negate burning
-                        ItemStack itemStack = player.getEquippedStack(EquipmentSlot.HEAD);
-                        if(!itemStack.isEmpty()) {
-                            if(itemStack.isDamageable()) {
-
-                                // damage stack instead of burning player
-                                itemStack.setDamage(itemStack.getDamage() + player.getRandom().nextInt(2));
-                                if(itemStack.getDamage() >= itemStack.getMaxDamage()) {
-                                    player.sendEquipmentBreakStatus(EquipmentSlot.HEAD);
-                                    player.equipStack(EquipmentSlot.HEAD, ItemStack.EMPTY);
-                                }
+                        ItemStack helmet = player.getEquippedStack(EquipmentSlot.HEAD);
+                        if (!helmet.isEmpty() && helmet.isDamageable()) {
+                            helmet.setDamage(helmet.getDamage() + player.getRandom().nextInt(2));
+                            if (helmet.getDamage() >= helmet.getMaxDamage()) {
+                                player.sendEquipmentBreakStatus(EquipmentSlot.HEAD);
+                                player.equipStack(EquipmentSlot.HEAD, ItemStack.EMPTY);
                             }
 
                             bl = false;
                         }
 
-                        // set player on fire
-                        if(bl) {
+                        if (bl) {
                             player.setOnFireFor(8);
                         }
                     }
@@ -325,6 +315,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
             }
         }
     }
+
 
     @Unique
     private boolean isInDaylight() {
@@ -354,7 +345,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
                 EntityType<?> type = identity.getType();
 
                 // damage player if they are an identity that gets hurt by high temps (eg. snow golem in nether)
-                if(type.isIn(IdentityEntityTags.HURT_BY_HIGH_TEMPERATURE)) {
+                if(type.isIn(IdentityEntityTags.HURT_BY_HIGH_TEMPERATURE) || SafeTagManager.isCustomHurtByHeat(type)) {
                     Biome biome = getWorld().getBiome(getBlockPos()).value();
                     if (!biome.isCold(getBlockPos())) {
                         player.damage(getDamageSources().onFire(), 1.0f);

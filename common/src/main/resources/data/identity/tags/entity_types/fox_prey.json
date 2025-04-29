@@ -2,9 +2,6 @@
   "replace": false,
   "values": [
     "minecraft:chicken",
-    "minecraft:rabbit",
-    "alexsmobs:raccoon",
-    "alexsmobs:hummingbird",
-    "alexsmobs:crow"
+    "minecraft:rabbit"
   ]
 }

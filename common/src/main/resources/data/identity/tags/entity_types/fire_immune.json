@@ -1,10 +1,5 @@
 {
     "replace": false,
     "values": [
-        "alexsmobs:bone_serpent",
-        "alexsmobs:sunbird",
-        "alexsmobs:void_worm",
-        "alexsmobs:warped_mosco",
-        "alexsmobs:crimson_mosquito"
     ]
 }

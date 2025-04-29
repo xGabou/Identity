@@ -3,6 +3,7 @@ package draylar.identity.mixin.player;
 import dev.architectury.event.EventResult;
 import draylar.identity.Identity;
 import draylar.identity.api.PlayerIdentity;
+import draylar.identity.api.SafeTagManager;
 import draylar.identity.api.event.IdentitySwapCallback;
 import draylar.identity.api.FlightHelper;
 import draylar.identity.api.platform.IdentityConfig;
@@ -298,7 +299,7 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         }
 
         // If the player is riding a Ravager and changes into an Identity that cannot ride Ravagers, kick them off.
-        if(player.getVehicle() instanceof RavagerEntity && (identity == null || !identity.getType().isIn(IdentityEntityTags.RAVAGER_RIDING))) {
+        if(player.getVehicle() instanceof RavagerEntity && (identity == null || !(identity.getType().isIn(IdentityEntityTags.RAVAGER_RIDING))) || SafeTagManager.isCustomRavagerRiding(identity.getType())) {
             player.stopRiding();
         }
 

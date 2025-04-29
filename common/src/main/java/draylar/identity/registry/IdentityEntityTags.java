@@ -20,6 +20,21 @@ public class IdentityEntityTags {
     public static final TagKey<EntityType<?>> LAVA_WALKING = register("lava_walking");
     public static final TagKey<EntityType<?>> CANT_SWIM = register("cant_swim");
     public static final TagKey<EntityType<?>> UNDROWNABLE = register("undrownable");
+    public static final TagKey<EntityType<?>> CUSTOM_FLYING = register("custom_flying");
+    public static final TagKey<EntityType<?>> CUSTOM_BREATHE_UNDERWATER = register("custom_breathe_underwater");
+    public static final TagKey<EntityType<?>> CUSTOM_FIRE_IMMUNE = register("custom_fire_immune");
+    public static final TagKey<EntityType<?>> CUSTOM_SLOW_FALLING = register("custom_slow_falling");
+    public static final TagKey<EntityType<?>> CUSTOM_BURNS_IN_DAYLIGHT = register("custom_burns_in_daylight");
+    public static final TagKey<EntityType<?>> CUSTOM_CANT_SWIM = register("custom_cant_swim");
+    public static final TagKey<EntityType<?>> CUSTOM_HURT_BY_HEAT = register("custom_hurt_by_high_temperature");
+    public static final TagKey<EntityType<?>> CUSTOM_LAVA_WALKING = register("custom_lava_walking");
+    public static final TagKey<EntityType<?>> CUSTOM_PIGLIN_FRIENDLY = register("custom_piglin_friendly");
+    public static final TagKey<EntityType<?>> CUSTOM_RAVAGER_RIDING = register("custom_ravager_riding");
+    public static final TagKey<EntityType<?>> CUSTOM_UNDROWNABLE = register("custom_undrownable");
+    public static final TagKey<EntityType<?>> CUSTOM_WOLF_PREY = register("custom_wolf_prey");
+    public static final TagKey<EntityType<?>> CUSTOM_FOX_PREY = register("custom_fox_prey");
+
+
 
     private IdentityEntityTags() { }
 

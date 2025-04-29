@@ -1,11 +1,6 @@
 {
   "replace": false,
   "values": [
-    "minecraft:chicken",
-    "alexsmobs:crow",
-    "alexsmobs:bald_eagle",
-    "alexsmobs:spectre",
-    "alexsmobs:hummingbird",
-    "alexsmobs:seagull"
+    "minecraft:chicken"
   ]
 }

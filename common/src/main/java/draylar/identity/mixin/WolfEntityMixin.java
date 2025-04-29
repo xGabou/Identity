@@ -1,6 +1,7 @@
 package draylar.identity.mixin;
 
 import draylar.identity.api.PlayerIdentity;
+import draylar.identity.api.SafeTagManager;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.registry.IdentityEntityTags;
 import net.minecraft.entity.EntityType;
@@ -42,7 +43,10 @@ public abstract class WolfEntityMixin extends TameableEntity {
                 return false;
             }
 
-            return identity != null && identity.getType().isIn(IdentityEntityTags.WOLF_PREY);
+            return identity != null && (
+                    identity.getType().isIn(IdentityEntityTags.WOLF_PREY) ||
+                            SafeTagManager.isCustomWolfPrey(identity.getType())
+            );
         }));
     }
 }

@@ -2,6 +2,7 @@ package draylar.identity.mixin;
 
 import draylar.identity.Identity;
 import draylar.identity.api.PlayerIdentity;
+import draylar.identity.api.SafeTagManager;
 import draylar.identity.registry.IdentityEntityTags;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.entity.LivingEntity;
@@ -28,7 +29,7 @@ public abstract class InGameHudMixin {
         LivingEntity identity = PlayerIdentity.getIdentity(player);
 
         if(identity != null) {
-            if(Identity.identity$isAquatic(identity) || identity.getType().isIn(IdentityEntityTags.UNDROWNABLE) && player.isSubmergedIn(FluidTags.WATER)) {
+            if(Identity.identity$isAquatic(identity) || (identity.getType().isIn(IdentityEntityTags.UNDROWNABLE) || SafeTagManager.isCustomUndrownable(identity.getType())) && player.isSubmergedIn(FluidTags.WATER)) {
                 return FluidTags.LAVA;    // will cause isSubmergedIn to return false, preventing air render
             }
         }

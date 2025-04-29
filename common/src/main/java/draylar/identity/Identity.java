@@ -1,12 +1,10 @@
 package draylar.identity;
 
+import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkManager;
 import draylar.identity.ability.AbilityRegistry;
-import draylar.identity.api.IdentityTickHandlers;
-import draylar.identity.api.PlayerFavorites;
-import draylar.identity.api.PlayerIdentity;
-import draylar.identity.api.PlayerUnlocks;
+import draylar.identity.api.*;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.network.NetworkHandler;
 import draylar.identity.network.ServerNetworking;
@@ -42,6 +40,9 @@ public class Identity {
         ServerNetworking.registerUseAbilityPacketHandler();
         registerJoinSyncPacket();
         IdentityTickHandlers.initialize();
+        LifecycleEvent.SERVER_STARTING.register(server -> {
+            SafeTagManager.loadAll(server);
+        });
     }
 
     public static void registerJoinSyncPacket() {
@@ -65,57 +66,40 @@ public class Identity {
     }
 
     public static boolean hasFlyingPermissions(ServerPlayerEntity player) {
+        boolean hasPermission = false;
         LivingEntity identity = PlayerIdentity.getIdentity(player);
         if(identity == null) {
-            return false;
+            return hasPermission;
         }
 
         if(IdentityConfig.getInstance().enableFlight() && isAbleToFly(identity)) {
-            List<String> requiredAdvancements = IdentityConfig.getInstance().advancementsRequiredForFlight();
 
             // requires at least 1 advancement, check if player has them
-            if(!requiredAdvancements.isEmpty()) {
-
-                boolean hasPermission = true;
-                for (String requiredAdvancement : requiredAdvancements) {
-                    Advancement advancement = player.server.getAdvancementLoader().get(new Identifier(requiredAdvancement));
-                    AdvancementProgress progress = player.getAdvancementTracker().getProgress(advancement);
-
-                    if(!progress.isDone()) {
-                        hasPermission = false;
-                    }
-                }
-
-                return hasPermission;
-            }
+            hasPermission =true;
 
 
-            return true;
+            return hasPermission;
         }
 
-        return false;
+        return hasPermission;
     }
 
     private static boolean isAbleToFly(LivingEntity identity) {
-        if (identity == null) {
-            return false;
-        }
+        if (identity == null) return false;
 
         EntityType<?> type = identity.getType();
-        String idString = EntityType.getId(type).toString();
+        Identifier id = EntityType.getId(type);
+        String idString = id.toString();
+
         IdentityConfig config = IdentityConfig.getInstance();
 
-        // REMOVE > ADD > TAG priority
-        if (config.removedFlyingEntities().contains(idString)) {
-            return false;
-        }
+        if (config.removedFlyingEntities().contains(idString)) return false;
+        if (config.extraFlyingEntities().contains(idString)) return true;
 
-        if (config.extraFlyingEntities().contains(idString)) {
-            return true;
-        }
-
-        return type.isIn(IdentityEntityTags.FLYING);
+        // Check both normal and custom flying tags
+        return type.isIn(IdentityEntityTags.FLYING) || SafeTagManager.isCustomFlying(type);
     }
+
 
 
     public static boolean identity$isAquatic(LivingEntity identity) {
@@ -139,7 +123,7 @@ public class Identity {
         }
 
         // Otherwise, fallback to normal tag detection
-        return type.isIn(IdentityEntityTags.BREATHE_UNDERWATER);
+        return type.isIn(IdentityEntityTags.BREATHE_UNDERWATER)|| SafeTagManager.isCustomBreatheUnderwater(type);
     }
 
     public static int getCooldown(EntityType<?> type) {

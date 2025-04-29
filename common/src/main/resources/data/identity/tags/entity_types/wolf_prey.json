@@ -3,8 +3,6 @@
   "values": [
     "minecraft:sheep",
     "minecraft:fox",
-    "minecraft:skeleton",
-    "alexsmobs:raccoon",
-    "alexsmobs:crow"
+    "minecraft:skeleton"
   ]
 }

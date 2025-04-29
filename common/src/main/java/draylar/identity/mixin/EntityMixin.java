@@ -1,6 +1,7 @@
 package draylar.identity.mixin;
 
 import draylar.identity.api.PlayerIdentity;
+import draylar.identity.api.SafeTagManager;
 import draylar.identity.impl.DimensionsRefresher;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
@@ -106,12 +107,21 @@ public abstract class EntityMixin implements DimensionsRefresher {
             cancellable = true
     )
     private void isFireImmune(CallbackInfoReturnable<Boolean> cir) {
-        if((Object) this instanceof PlayerEntity player) {
-            LivingEntity Identity = PlayerIdentity.getIdentity(player);
+        if ((Object) this instanceof PlayerEntity player) {
+            LivingEntity identity = PlayerIdentity.getIdentity(player);
 
-            if(Identity != null) {
-                cir.setReturnValue(Identity.getType().isFireImmune());
+            if (identity != null) {
+                EntityType<?> type = identity.getType();
+                boolean vanillaFireImmune = type.isFireImmune();
+                boolean customFireImmune = SafeTagManager.isCustomFireImmune(type);
+
+                if (vanillaFireImmune || customFireImmune) {
+                    cir.setReturnValue(true);
+                } else {
+                    cir.setReturnValue(false);
+                }
             }
         }
     }
+
 }

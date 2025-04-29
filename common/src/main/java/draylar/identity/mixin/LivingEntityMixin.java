@@ -2,6 +2,7 @@ package draylar.identity.mixin;
 
 import draylar.identity.api.IdentityGranting;
 import draylar.identity.api.PlayerIdentity;
+import draylar.identity.api.SafeTagManager;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.impl.NearbySongAccessor;
 import draylar.identity.compat.LivingEntityCompatAccessor;
@@ -88,14 +89,18 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
             LivingEntity identity = PlayerIdentity.getIdentity(player);
 
             if (identity != null) {
-                if (!this.isSneaking() && identity.getType().isIn(IdentityEntityTags.SLOW_FALLING)) {
-                    return true;
+                if (!this.isSneaking()) {
+                    EntityType<?> type = identity.getType();
+                    if (type.isIn(IdentityEntityTags.SLOW_FALLING) || SafeTagManager.isCustomSlowFalling(type)) {
+                        return true;
+                    }
                 }
             }
         }
 
         return this.hasStatusEffect(StatusEffects.SLOW_FALLING);
     }
+
 //    @Unique
 //    private boolean identity$isAquatic(LivingEntity identity) {
 //        return identity != null && identity.getType().isIn(IdentityEntityTags.BREATHE_UNDERWATER);
@@ -390,7 +395,7 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
             if (identity != null) {
                 if (identity$isAquatic(identity)) {
                     cir.setReturnValue(true);
-                } else if (identity.getType().isIn(IdentityEntityTags.UNDROWNABLE)) {
+                } else if (identity.getType().isIn(IdentityEntityTags.UNDROWNABLE) || SafeTagManager.isCustomUndrownable(identity.getType())) {
                     cir.setReturnValue(true);
                 } else {
                     cir.setReturnValue(false);
