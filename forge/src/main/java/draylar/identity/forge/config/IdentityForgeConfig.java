@@ -78,6 +78,7 @@ public class IdentityForgeConfig extends IdentityConfig {
             if (IdentityForge.isAlexsMobsLoaded) {
                 put("alexsmobs:grizzly_bear", 20);
                 put("alexsmobs:guster", 40);
+                put("alexsmobs:coackroach", 10);
                 put("alexsmobs:dropbear", 60);
                 put("alexsmobs:sunbird", 60);
                 put("alexsmobs:void_worm", 80);

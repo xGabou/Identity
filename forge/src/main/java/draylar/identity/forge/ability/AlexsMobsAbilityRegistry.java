@@ -28,6 +28,7 @@ public class AlexsMobsAbilityRegistry {
           AbilityRegistry.register(AMEntityRegistry.ANACONDA.get(), new AnacondaAbility());
           AbilityRegistry.register(AMEntityRegistry.BALD_EAGLE.get(), new BaldEagleAbility());
           AbilityRegistry.register(AMEntityRegistry.BONE_SERPENT.get(), new BoneSerpentAbility());
+          AbilityRegistry.register(AMEntityRegistry.COCKROACH.get(),new CockRoachAbility());
           AbilityRegistry.register(AMEntityRegistry.CRIMSON_MOSQUITO.get(), new CrimsonMosquitoAbility());
           AbilityRegistry.register(AMEntityRegistry.CROCODILE.get(), new CrocodileAbility());
           AbilityRegistry.register(AMEntityRegistry.CROW.get(), new CrowAbility());

@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "draylar.identity.forge.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+
+    "EntityCockroachMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,6 +1,5 @@
 modLoader = "javafml"
 loaderVersion = "[47,)"
-#issueTrackerURL = ""
 license = "Custom"
 
 [[mods]]
@@ -13,7 +12,6 @@ description = '''
 Play as your favorite entities!
 No more crashes !!!
 '''
-#logoFile = ""
 
 [[dependencies.identity]]
 modId = "forge"
@@ -35,3 +33,12 @@ mandatory = true
 versionRange = "[9.2.14,)"
 ordering = "AFTER"
 side = "BOTH"
+
+[[mixins]]
+config = "identity.mixins.json"
+
+[[mixins]]
+config = "identity-forge.mixins.json"
+
+[[mixins]]
+config = "identity.alexsmobs.mixins.json"

@@ -1,6 +1,8 @@
 
 package draylar.identity.util;
 
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.JukeboxBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -8,10 +10,13 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.List;
 import java.util.Random;
@@ -144,6 +149,40 @@ public class AbilityUtils {
         for (LivingEntity entity : world.getEntitiesByClass(LivingEntity.class, player.getBoundingBox().expand(radius), e -> e != player)) {
             entity.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, durationTicks, amplifier));
         }
+    }
+    /**
+     * Finds the first JukeboxBlockEntity near the origin using a 3.46-block Euclidean radius,
+     * matching the behavior used in Alex's Mobs.
+     *
+     * @param world  The world to search in
+     * @param origin The central position (e.g., player or mob)
+     * @return A nearby JukeboxBlockEntity or null if none are found
+     */
+    public static BlockPos findNearbyJukebox(World world, BlockPos origin) {
+        double radius = 3.46;
+        int blockRadius = (int) Math.ceil(radius); // search cube of size 4
+
+        int originChunkX = origin.getX() >> 4;
+        int originChunkZ = origin.getZ() >> 4;
+        int chunkRadius = (blockRadius >> 4) + 1;
+
+        for (int dx = -chunkRadius; dx <= chunkRadius; dx++) {
+            for (int dz = -chunkRadius; dz <= chunkRadius; dz++) {
+                Chunk chunk = world.getChunk(originChunkX + dx, originChunkZ + dz);
+
+                if (chunk instanceof WorldChunk worldChunk) {
+                    for (BlockEntity be : worldChunk.getBlockEntities().values()) {
+                        if (be instanceof JukeboxBlockEntity jukebox) {
+                            if (jukebox.getPos().isWithinDistance(origin, radius)) {
+                                return jukebox.getPos();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null; // None found
     }
 
 }

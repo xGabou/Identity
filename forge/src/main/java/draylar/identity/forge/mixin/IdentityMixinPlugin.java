@@ -1,5 +1,7 @@
 package draylar.identity.forge.mixin;
 
+import draylar.identity.Identity;
+import draylar.identity.forge.IdentityForge;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -10,13 +12,14 @@ import java.util.Set;
 public class IdentityMixinPlugin implements IMixinConfigPlugin {
 
     private static Boolean bjornLoaded = null;
+    private static Boolean alexLoaded = null;
 
-    private static boolean isBjornLibLoaded() {
+    private boolean isBjornLibLoaded() {
         if (bjornLoaded != null) return bjornLoaded;
 
         try {
             // Check via class existence instead of ModList to avoid early crash
-            Class.forName("com.furiusmax.bjornlib.BjornLib");
+            Class.forName("com.furiusmax.bjornlib.BjornLib", false, getClass().getClassLoader());
             bjornLoaded = true;
         } catch (ClassNotFoundException e) {
             bjornLoaded = false;
@@ -25,10 +28,30 @@ public class IdentityMixinPlugin implements IMixinConfigPlugin {
         return bjornLoaded;
     }
 
+    private boolean isAlexLoaded() {
+        if (alexLoaded != null) return alexLoaded;
+
+        try {
+            // Safer to check for a known class rather than the base package
+            Class.forName("com.github.alexthe666.alexsmobs.AlexsMobs", false, getClass().getClassLoader());
+            alexLoaded = true;
+        } catch (ClassNotFoundException e) {
+            alexLoaded = false;
+        }
+
+        System.out.println("[Identity] Alex's Mobs detected: " + alexLoaded);
+        return alexLoaded;
+    }
+
+
+
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
 
         if (mixinClassName.endsWith("LivingEntityAccessor") && isBjornLibLoaded()) {
+            return false;
+        }
+        if(mixinClassName.endsWith("EntityCockroachMixin") && !isAlexLoaded() ) {
             return false;
         }
         if (mixinClassName.endsWith("PlayerEntityRendererMixin") && isBjornLibLoaded()) {

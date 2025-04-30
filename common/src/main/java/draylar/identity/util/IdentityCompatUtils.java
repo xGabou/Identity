@@ -19,10 +19,10 @@ public class IdentityCompatUtils {
                 id.getPath().equals("dragon");
     }
     public static boolean isAlexsMobsLoaded() {
-        for(var d:Platform.getMods())
-        {
-            Identity.LOGGER.info(d.getName()+" "+d.getModId());
-        }
+//        for(var d:Platform.getMods())
+//        {
+//            Identity.LOGGER.info(d.getName()+" "+d.getModId());
+//        }
         return Platform.isModLoaded("alexsmobs");
     }
     public static boolean isNaturalistLoaded() {

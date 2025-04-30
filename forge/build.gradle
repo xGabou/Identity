@@ -6,7 +6,8 @@ loom {
     forge {
         mixinConfigs = [
                 "identity-forge.mixins.json",
-                "identity.mixins.json"
+                "identity.mixins.json",
+                "identity.alexsmobs.mixins.json"
         ]
     }
 }
