@@ -3,51 +3,36 @@ package draylar.identity.forge.mixin.accessor;
 import com.github.alexthe666.alexsmobs.entity.EntityCockroach;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(EntityCockroach.class)
 public interface EntityCockroachAccessor {
 
-    @Accessor("isJukeboxing")
+    @Accessor(value = "isJukeboxing", remap = false)
     boolean identity$isJukeboxing();
 
-    @Accessor("isJukeboxing")
+    @Accessor(value = "isJukeboxing", remap = false)
     void identity$setJukeboxing(boolean value);
 
-    @Accessor("jukeboxPosition")
+    @Accessor(value = "jukeboxPosition", remap = false)
     BlockPos identity$getJukeboxPosition();
 
-    @Accessor("jukeboxPosition")
+    @Accessor(value = "jukeboxPosition", remap = false)
     void identity$setJukeboxPosition(BlockPos pos);
 
-    @Accessor("laCucarachaTimer")
-    int identity$getCucarachaTimer();
-
-    @Accessor("laCucarachaTimer")
-    void identity$setCucarachaTimer(int value);
-
-    @Accessor("prevStand")
-    boolean identity$getPrevStand();
-
-    @Accessor("prevStand")
-    void identity$setPrevStand(boolean value);
-
-    @Invoker("tellOthersImPlayingLaCucaracha")
-    void identity$tellOthersImPlayingLaCucaracha();
-
-    @Accessor("laCucarachaTimer")
+    @Accessor(value = "laCucarachaTimer", remap = false)
     int identity$getLaCucarachaTimer();
 
-    @Accessor("laCucarachaTimer")
+    @Accessor(value = "laCucarachaTimer", remap = false)
     void identity$setLaCucarachaTimer(int value);
 
+    @Accessor(value = "prevStand", remap = false)
+    boolean identity$getPrevStand();
 
-    default void identity$incrementLaCucarachaTimer() {
-        identity$setLaCucarachaTimer(identity$getLaCucarachaTimer() + 1);
-    }
+    @Accessor(value = "prevStand", remap = false)
+    void identity$setPrevStand(boolean value);
 
-//    @Accessor("this.random")
-//    net.minecraft.util.math.random.Random identity$getRandom();
+    @Invoker(value = "tellOthersImPlayingLaCucaracha", remap = false)
+    void identity$tellOthersImPlayingLaCucaracha();
 }

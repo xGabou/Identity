@@ -29,6 +29,7 @@ import java.util.List;
 
 public class Identity {
 
+    public static final String MODID = "identity";
     public static final Logger LOGGER = LoggerFactory.getLogger(Identity.class);
 
     public void initialize() {

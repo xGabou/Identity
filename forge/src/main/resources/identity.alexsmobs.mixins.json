@@ -4,9 +4,13 @@
   "package": "draylar.identity.forge.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-
-    "EntityCockroachMixin"
+  "accessor.EntityCockroachAccessor",
+    "EntityCockroachMixin",
+    "ServerPlayerEntityMixin"
   ],
+  "client": [
+    "EntityCockroachClientMixin"
+    ],
   "injectors": {
     "defaultRequire": 1
   }

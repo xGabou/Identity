@@ -88,6 +88,8 @@ public class EntityUpdaters {
             }
         });
 
+
+
         EntityUpdaters.register(EntityType.ENDER_DRAGON, (player, dragon) -> {
             dragon.wingPosition += 0.01F;
             dragon.prevWingPosition = dragon.wingPosition;
