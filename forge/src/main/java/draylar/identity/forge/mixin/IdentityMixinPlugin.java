@@ -51,7 +51,13 @@ public class IdentityMixinPlugin implements IMixinConfigPlugin {
         if (mixinClassName.endsWith("LivingEntityAccessor") && isBjornLibLoaded()) {
             return false;
         }
-        if(mixinClassName.endsWith("EntityCockroachMixin") && !isAlexLoaded() ) {
+
+
+        if(mixinClassName.endsWith("ServerPlayerEntityMixin") && !isAlexLoaded() ) {
+            return false;
+        }
+
+        if(mixinClassName.endsWith("ClientPlayerEntityMixin") && !isAlexLoaded() ) {
             return false;
         }
         if (mixinClassName.endsWith("PlayerEntityRendererMixin") && isBjornLibLoaded()) {

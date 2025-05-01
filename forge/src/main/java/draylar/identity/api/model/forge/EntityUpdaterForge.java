@@ -3,8 +3,6 @@ package draylar.identity.api.model.forge;
 import com.github.alexthe666.alexsmobs.entity.AMEntityRegistry;
 import draylar.identity.api.model.EntityUpdaters;
 import draylar.identity.forge.IdentityForge;
-import draylar.identity.forge.network.ForceDancePacket;
-import draylar.identity.forge.network.NetworkHandler;
 import draylar.identity.impl.NearbySongAccessor;
 
 public class EntityUpdaterForge {
@@ -14,20 +12,21 @@ public class EntityUpdaterForge {
         if (!IdentityForge.isAlexsMobsLoaded) {
             return;
         }
-        EntityUpdaters.register(AMEntityRegistry.COCKROACH.get(), (player, cockroach) -> {
-            if (player.isOnGround() && ((NearbySongAccessor) player).identity_isNearbySongPlaying()) {
-
-                cockroach.setNearbySongPlaying(player.getBlockPos(), true);
-                cockroach.setDancing(true);
-                cockroach.handleStatus((byte) 67);
-
-                NetworkHandler.CHANNEL.sendToServer(new ForceDancePacket(cockroach.getBlockPos()));
-
-            } else {
-                cockroach.setNearbySongPlaying(player.getBlockPos(), false);
-                cockroach.setDancing(false);
-            }
-        });
+        System.out.println("Registering entity updaters for Alex's Mobs!");
+//        EntityUpdaters.register(AMEntityRegistry.COCKROACH.get(), (player, cockroach) -> {
+//            if (player.isOnGround() && ((NearbySongAccessor) player).identity_isNearbySongPlaying()) {
+//
+//                cockroach.setNearbySongPlaying(player.getBlockPos(), true);
+//                cockroach.setDancing(true);
+//                player.handleStatus((byte) 67);
+//                System.out.println("Playing nearby song!");
+//
+//            } else {
+//                cockroach.setNearbySongPlaying(player.getBlockPos(), false);
+//                cockroach.setDancing(false);
+//                System.out.println("Stopping nearby song!");
+//            }
+//        });
 
     }
 }

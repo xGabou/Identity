@@ -5,8 +5,6 @@ import draylar.identity.Identity;
 import draylar.identity.forge.ability.AlexsMobsAbilityRegistry;
 import draylar.identity.forge.config.ConfigLoader;
 import draylar.identity.forge.config.IdentityForgeConfig;
-//import draylar.identity.forge.mixin.accessor.ForgeLivingEntityAccessorCompat;
-import draylar.identity.forge.network.NetworkHandler;
 import draylar.identity.util.IdentityCompatUtils;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -35,7 +33,6 @@ public class IdentityForge {
 
     private void setup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            NetworkHandler.registerPackets();
             AlexsMobsAbilityRegistry.init();
         });
     }
