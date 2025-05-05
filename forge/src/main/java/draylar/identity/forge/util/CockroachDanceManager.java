@@ -3,9 +3,13 @@ package draylar.identity.forge.util;
 import com.github.alexthe666.alexsmobs.entity.EntityCockroach;
 import com.github.alexthe666.alexsmobs.item.ItemMaraca;
 import draylar.identity.api.PlayerIdentity;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.block.Blocks;
+import net.minecraft.util.math.Box;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,10 +54,13 @@ public class CockroachDanceManager {
             if (player.getMainHandStack().getItem() instanceof ItemMaraca ||
                     player.getOffHandStack().getItem() instanceof ItemMaraca) {
                 world.sendEntityStatus(player, (byte) 69);
-                cockroach.setNearestMusician(player.getUuid());
+                cockroach.setMaracas(true);
+                tellOthersImPlayingLaCucaracha(player);
             }
             else{
                 world.sendEntityStatus(player, (byte) 67);
+                cockroach.setMaracas(false);
+                identity$tellOtherCockroachesToStopDancing(cockroach, player);
 
             }
             // server‐side animate hitbox & physics
@@ -72,11 +79,44 @@ public class CockroachDanceManager {
             // tell clients “stop dancing”
             world.sendEntityStatus(player, (byte) 68);
             cockroach.setNearestMusician(null);
+            cockroach.setMaracas(false);
+            identity$tellOtherCockroachesToStopDancing(cockroach, player);
 
             // server‐side final cleanup
             cockroach.setDancing(false);
             cockroach.prevDanceProgress = cockroach.danceProgress;
             if (cockroach.danceProgress > 0.0F) cockroach.danceProgress--;
+        }
+    }
+    private static void tellOthersImPlayingLaCucaracha(ServerPlayerEntity identity) {
+        for(EntityCockroach roach : identity.getWorld().getEntitiesByClass(EntityCockroach.class, getMusicianDistance(identity), EntityPredicates.EXCEPT_SPECTATOR)) {
+            if (!roach.hasMaracas()) {
+                roach.setNearestMusician(identity.getUuid());
+            }
+        }
+
+    }
+    private static Box getMusicianDistance(ServerPlayerEntity identity) {
+        return identity.getBoundingBox().expand((double)10.0F, (double)10.0F, (double)10.0F);
+    }
+    @Unique
+    private static void identity$tellOtherCockroachesToStopDancing(EntityCockroach cockroach, ServerPlayerEntity player) {
+        for(EntityCockroach roach : player.getWorld().getEntitiesByClass(EntityCockroach.class, getMusicianDistance(player), EntityPredicates.VALID_ENTITY)) {
+            if(roach != cockroach){
+                try{
+                    if (roach.hasMaracas() && roach.getNearestMusician().getUuid() == player.getUuid()) {
+                        roach.setMaracas(false);
+                        roach.setDancing(false);
+                        roach.setNearbySongPlaying(player.getBlockPos(), false);
+                    }
+                }
+                catch (NullPointerException e) {
+                    roach.setDancing(false);
+                    roach.setNearbySongPlaying(player.getBlockPos(), false);
+                }
+            }
+
+
         }
     }
 }

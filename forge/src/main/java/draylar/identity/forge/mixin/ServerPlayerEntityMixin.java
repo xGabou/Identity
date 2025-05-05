@@ -19,4 +19,12 @@ public abstract class ServerPlayerEntityMixin {
     private void identity$tickCockroachDance(CallbackInfo ci) {
         CockroachDanceManager.tick((ServerPlayerEntity)(Object)this);
     }
+    @Inject(method = "onSpawn", at = @At("RETURN"))
+    private void identity$onSpawn(CallbackInfo ci) {
+        ServerPlayerEntity player = (ServerPlayerEntity)(Object)this;
+
+        if (PlayerIdentity.getIdentity(player) instanceof EntityCockroach cockroach) {
+           cockroach.getWorld().sendEntityStatus(player,(byte) 68);
+        }
+    }
 }
