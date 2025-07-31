@@ -1,6 +1,6 @@
 # AGENTS
 
-This repository hosts **Project Atmosphere**, a Minecraft Forge 1.20.1 mod written in Java.
+This repository hosts **Identity**, a Minecraft Forge 1.20.1 mod written in Java.
 
 ## Coding Guidelines
 - Use four spaces for indentation.
