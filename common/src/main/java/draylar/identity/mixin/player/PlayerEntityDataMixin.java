@@ -270,20 +270,25 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         // refresh entity hitbox dimensions
         ((DimensionsRefresher) player).identity_refreshDimensions();
 
-        // Identity is valid and scaling health is on; set entity's max health and current health to reflect identity.
+        // Identity is valid and scaling health is on; set entity's max health and current health to reflect identity
         if(identity != null && IdentityConfig.getInstance().scalingHealth()) {
-            player.setHealth(Math.min(player.getHealth(), identity.getMaxHealth()));
-            player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.min(IdentityConfig.getInstance().maxHealth(), identity.getMaxHealth()));
+            float prevMax = player.getMaxHealth();
+            float ratio = prevMax <= 0 ? 1.0F : player.getHealth() / prevMax;
+            float newMax = Math.min(IdentityConfig.getInstance().maxHealth(), identity.getMaxHealth());
+            player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(newMax);
+            player.setHealth(Math.max(1.0F, ratio * newMax));
         }
 
         // If the identity is null (going back to player), set the player's base health value to 20 (default) to clear old changes.
         if(identity == null) {
+            float prevMax = player.getMaxHealth();
+            float ratio = prevMax <= 0 ? 1.0F : player.getHealth() / prevMax;
             if(IdentityConfig.getInstance().scalingHealth()) {
                 player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(20);
             }
 
-            // Clear health value if needed
-            player.setHealth(Math.min(player.getHealth(), player.getMaxHealth()));
+            // Clear health value if needed, scaling by previous ratio
+            player.setHealth(Math.max(1.0F, ratio * player.getMaxHealth()));
         }
 
         // update flight properties on player depending on identity
