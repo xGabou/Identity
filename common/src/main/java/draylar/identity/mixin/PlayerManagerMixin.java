@@ -40,8 +40,11 @@ public class PlayerManagerMixin {
 
         // Re-sync max health for identity
         if(identity != null && IdentityConfig.getInstance().scalingHealth()) {
-            player.setHealth(Math.min(player.getHealth(), identity.getMaxHealth()));
-            player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.min(IdentityConfig.getInstance().maxHealth(), identity.getMaxHealth()));
+            float prevMax = player.getMaxHealth();
+            float ratio = prevMax <= 0 ? 1.0F : player.getHealth() / prevMax;
+            float newMax = Math.min(IdentityConfig.getInstance().maxHealth(), identity.getMaxHealth());
+            player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(newMax);
+            player.setHealth(Math.max(1.0F, ratio * newMax));
             player.networkHandler.sendPacket(new EntityAttributesS2CPacket(player.getId(), player.getAttributes().getAttributesToSend()));
         }
     }
