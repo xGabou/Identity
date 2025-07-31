@@ -41,7 +41,7 @@ public class IdentityForgeConfig extends IdentityConfig {
     public int hostilityTime = 20 * 15;
     public List<String> advancementsRequiredForFlight = new ArrayList<>();
     public boolean scalingHealth = true;
-    public int maxHealth = 40;
+    public int maxHealth = 20;
     public boolean enableClientSwapMenu = true;
     public boolean enableSwaps = true;
     public int endermanAbilityTeleportDistance = 32;
@@ -51,7 +51,7 @@ public class IdentityForgeConfig extends IdentityConfig {
     public boolean logCommands = true;
     public float flySpeed = 0.05f;
     public boolean killForIdentity = false;
-    public int requiredKillsForIdentity = 1;
+    public int requiredKillsForIdentity = 10;
     public boolean wardenIsBlinded = true;
     public boolean wardenBlindsNearby = true;
     public String forcedIdentity = null;

@@ -149,6 +149,9 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
 
 
 
+
+
+
     private void identity_setBipedIdentityModelPose(AbstractClientPlayerEntity player, LivingEntity identity, LivingEntityRenderer identityRenderer) {
         if (!(identityRenderer.getModel() instanceof BipedEntityModel<?> identityBipedModel)) {
             return; // Don't crash on non-humanoid models like CodModel

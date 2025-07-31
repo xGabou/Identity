@@ -270,26 +270,21 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         // refresh entity hitbox dimensions
         ((DimensionsRefresher) player).identity_refreshDimensions();
 
-        // Identity is valid and scaling health is on; set entity's max health and current health to reflect identity
-        if(identity != null && IdentityConfig.getInstance().scalingHealth()) {
-            float prevMax = player.getMaxHealth();
-            float ratio = prevMax <= 0 ? 1.0F : player.getHealth() / prevMax;
-            float newMax = Math.min(IdentityConfig.getInstance().maxHealth(), identity.getMaxHealth());
-            player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(newMax);
-            player.setHealth(Math.max(1.0F, ratio * newMax));
+        // Identity is valid and scaling health is on; set entity's max health and current health to reflect identity.
+        if (identity != null && IdentityConfig.getInstance().scalingHealth()) {
+            double oldMax = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).getBaseValue();
+            double newMax = Math.min(IdentityConfig.getInstance().maxHealth(), identity.getMaxHealth());
+            identity$scaleHealth(player, oldMax, newMax);
         }
+
 
         // If the identity is null (going back to player), set the player's base health value to 20 (default) to clear old changes.
-        if(identity == null) {
-            float prevMax = player.getMaxHealth();
-            float ratio = prevMax <= 0 ? 1.0F : player.getHealth() / prevMax;
-            if(IdentityConfig.getInstance().scalingHealth()) {
-                player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(20);
-            }
-
-            // Clear health value if needed, scaling by previous ratio
-            player.setHealth(Math.max(1.0F, ratio * player.getMaxHealth()));
+        if (identity == null && IdentityConfig.getInstance().scalingHealth()) {
+            double oldMax = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).getBaseValue();
+            double newMax = 20.0;
+            identity$scaleHealth(player, oldMax, newMax);
         }
+
 
         // update flight properties on player depending on identity
         ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity) player;
@@ -324,5 +319,16 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         }
 
         return true;
+    }
+
+    @Unique
+    private void identity$scaleHealth(PlayerEntity player, double oldMax, double newMax) {
+        double currentHealth = player.getHealth();
+
+        double ratio = (oldMax > 0.0) ? (currentHealth / oldMax) : 1.0;
+        double scaledHealth = net.minecraft.util.math.MathHelper.clamp(ratio * newMax, 1.0, newMax);
+
+        player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(newMax);
+        player.setHealth((float) scaledHealth);
     }
 }

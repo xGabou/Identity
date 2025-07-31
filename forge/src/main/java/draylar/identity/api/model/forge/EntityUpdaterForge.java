@@ -1,6 +1,5 @@
 package draylar.identity.api.model.forge;
 
-import com.github.alexthe666.alexsmobs.entity.AMEntityRegistry;
 import draylar.identity.api.model.EntityUpdaters;
 import draylar.identity.forge.IdentityForge;
 import draylar.identity.impl.NearbySongAccessor;
