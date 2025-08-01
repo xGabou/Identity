@@ -78,6 +78,9 @@ public class IdentityFabricConfig extends IdentityConfig implements Config {
     @Comment(value = "If set to false, only operators can switch identities. Used on the server; guaranteed to be authoritative.")
     public boolean enableSwaps = true;
 
+    @Comment(value = "List of player names allowed to swap identities when swaps are disabled.")
+    public List<String> allowedSwappers = new ArrayList<>();
+
     @Comment(value = "In blocks, how far can the Enderman ability teleport?")
     public int endermanAbilityTeleportDistance = 32;
 
@@ -336,6 +339,11 @@ public class IdentityFabricConfig extends IdentityConfig implements Config {
     @Override
     public boolean enableSwaps() {
         return enableSwaps;
+    }
+
+    @Override
+    public List<String> allowedSwappers() {
+        return allowedSwappers;
     }
 
     @Override

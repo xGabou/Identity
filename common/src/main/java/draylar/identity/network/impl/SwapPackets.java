@@ -25,7 +25,10 @@ public class SwapPackets {
 
                 context.getPlayer().getServer().execute(() -> {
                     // Ensure player has permission to switch identities
-                    if(IdentityConfig.getInstance().enableSwaps() || context.getPlayer().hasPermissionLevel(3)) {
+                    if(IdentityConfig.getInstance().enableSwaps() ||
+                        context.getPlayer().hasPermissionLevel(3) ||
+                        IdentityConfig.getInstance().allowedSwappers().stream()
+                            .anyMatch(p -> p.equalsIgnoreCase(context.getPlayer().getGameProfile().getName()))) {
                         // player type shouldn't be sent, but we still check regardless
                         if(entityType.equals(EntityType.PLAYER)) {
                             PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), null, null);
@@ -43,7 +46,10 @@ public class SwapPackets {
             } else {
                 // Swap back to player if server allows it
                 context.getPlayer().getServer().execute(() -> {
-                    if(IdentityConfig.getInstance().enableSwaps() || context.getPlayer().hasPermissionLevel(3)) {
+                    if(IdentityConfig.getInstance().enableSwaps() ||
+                        context.getPlayer().hasPermissionLevel(3) ||
+                        IdentityConfig.getInstance().allowedSwappers().stream()
+                            .anyMatch(p -> p.equalsIgnoreCase(context.getPlayer().getGameProfile().getName()))) {
                         PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), null, null);
                     }
 
