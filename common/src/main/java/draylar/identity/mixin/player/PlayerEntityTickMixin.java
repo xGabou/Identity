@@ -33,6 +33,10 @@ public abstract class PlayerEntityTickMixin extends LivingEntity {
             if(handler != null) {
                 handler.tick((PlayerEntity) (Object) this, identity);
             }
+
+            if(getWorld().isClient) {
+                identity.tick();
+            }
         }
 
         // Update misc. server-side entity properties for the player.
