@@ -13,7 +13,10 @@ public class MenuKeyPressHandler implements ClientTickEvent.Client {
         assert client.player != null;
 
         if(IdentityClient.MENU_KEY.wasPressed()) {
-            if(IdentityConfig.getInstance().enableClientSwapMenu() || client.player.hasPermissionLevel(3)) {
+            if(IdentityConfig.getInstance().enableClientSwapMenu() ||
+                client.player.hasPermissionLevel(3) ||
+                IdentityConfig.getInstance().allowedSwappers().stream()
+                    .anyMatch(p -> p.equalsIgnoreCase(client.player.getGameProfile().getName()))) {
                 MinecraftClient.getInstance().setScreen(new IdentityScreen());
             }
         }

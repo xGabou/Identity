@@ -44,6 +44,7 @@ public class IdentityForgeConfig extends IdentityConfig {
     public int maxHealth = 20;
     public boolean enableClientSwapMenu = true;
     public boolean enableSwaps = true;
+    public List<String> allowedSwappers = new ArrayList<>();
     public int endermanAbilityTeleportDistance = 32;
     public boolean showPlayerNametag = false;
     public boolean forceChangeNew = false;
@@ -277,6 +278,11 @@ public class IdentityForgeConfig extends IdentityConfig {
     @Override
     public boolean enableSwaps() {
         return enableSwaps;
+    }
+
+    @Override
+    public List<String> allowedSwappers() {
+        return allowedSwappers;
     }
 
     @Override

@@ -76,6 +76,12 @@ public abstract class IdentityConfig {
 
     public abstract boolean enableSwaps();
 
+    /**
+     * Players listed here may swap identities even when {@link #enableSwaps()} is false.
+     * Names are compared case-insensitively.
+     */
+    public abstract List<String> allowedSwappers();
+
     public abstract int hostilityTime();
 
     public abstract boolean wardenIsBlinded();
