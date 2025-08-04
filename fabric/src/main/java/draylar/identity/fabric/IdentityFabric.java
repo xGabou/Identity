@@ -15,7 +15,7 @@ public class IdentityFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         IdentityFabric.CONFIG = OmegaConfig.register(IdentityFabricConfig.class);
-        IdentityPlatform.setConfig(IdentityFabric.CONFIG);
+        IdentityPlatform.setConfig(CONFIG);
         IdentityPlatform.setReloader(new FabricConfigReloader());
         new Identity().initialize();
     }
