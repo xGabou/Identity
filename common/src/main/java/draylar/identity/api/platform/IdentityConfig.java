@@ -77,6 +77,12 @@ public abstract class IdentityConfig {
     public abstract boolean enableSwaps();
 
     /**
+     * Sets whether all players may swap identities regardless of the whitelist.
+     * When set to {@code false}, only operators or whitelisted players may swap.
+     */
+    public abstract void setEnableSwaps(boolean enabled);
+
+    /**
      * Players listed here may swap identities even when {@link #enableSwaps()} is false.
      * Names are compared case-insensitively.
      */

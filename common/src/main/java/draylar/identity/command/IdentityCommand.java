@@ -1,6 +1,7 @@
 package draylar.identity.command;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import draylar.identity.api.PlayerIdentity;
@@ -205,12 +206,53 @@ public class IdentityCommand {
                                     })
                             ).build();
 
+            LiteralCommandNode<ServerCommandSource> whitelistNode =
+                    CommandManager.literal("whitelist")
+                            .then(CommandManager.literal("enable")
+                                    .executes(ctx -> {
+                                        IdentityConfig.getInstance().setEnableSwaps(false);
+                                        if (IdentityConfig.getInstance().logCommands()) {
+                                            ctx.getSource().sendFeedback(() -> Text.literal("Enabled identity whitelist"), true);
+                                        }
+                                        return 1;
+                                    }))
+                            .then(CommandManager.literal("disable")
+                                    .executes(ctx -> {
+                                        IdentityConfig.getInstance().setEnableSwaps(true);
+                                        if (IdentityConfig.getInstance().logCommands()) {
+                                            ctx.getSource().sendFeedback(() -> Text.literal("Disabled identity whitelist"), true);
+                                        }
+                                        return 1;
+                                    }))
+                            .then(CommandManager.literal("add")
+                                    .then(CommandManager.argument("player", StringArgumentType.string())
+                                            .executes(ctx -> {
+                                                String name = StringArgumentType.getString(ctx, "player");
+                                                IdentityConfig.getInstance().allowedSwappers().add(name);
+                                                if (IdentityConfig.getInstance().logCommands()) {
+                                                    ctx.getSource().sendFeedback(() -> Text.literal("Added " + name + " to identity whitelist"), true);
+                                                }
+                                                return 1;
+                                            })))
+                            .then(CommandManager.literal("remove")
+                                    .then(CommandManager.argument("player", StringArgumentType.string())
+                                            .executes(ctx -> {
+                                                String name = StringArgumentType.getString(ctx, "player");
+                                                IdentityConfig.getInstance().allowedSwappers().removeIf(n -> n.equalsIgnoreCase(name));
+                                                if (IdentityConfig.getInstance().logCommands()) {
+                                                    ctx.getSource().sendFeedback(() -> Text.literal("Removed " + name + " from identity whitelist"), true);
+                                                }
+                                                return 1;
+                                            })))
+                            .build();
+
             rootNode.addChild(grantNode);
             rootNode.addChild(revokeNode);
             rootNode.addChild(equip);
             rootNode.addChild(unequip);
             rootNode.addChild(test);
             rootNode.addChild(offsetNode);
+            rootNode.addChild(whitelistNode);
 
             dispatcher.getRoot().addChild(rootNode);
         });

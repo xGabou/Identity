@@ -342,6 +342,11 @@ public class IdentityFabricConfig extends IdentityConfig implements Config {
     }
 
     @Override
+    public void setEnableSwaps(boolean enabled) {
+        this.enableSwaps = enabled;
+    }
+
+    @Override
     public List<String> allowedSwappers() {
         return allowedSwappers;
     }

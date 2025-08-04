@@ -281,6 +281,11 @@ public class IdentityForgeConfig extends IdentityConfig {
     }
 
     @Override
+    public void setEnableSwaps(boolean enabled) {
+        this.enableSwaps = enabled;
+    }
+
+    @Override
     public List<String> allowedSwappers() {
         return allowedSwappers;
     }
