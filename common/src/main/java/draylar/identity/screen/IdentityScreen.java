@@ -83,8 +83,12 @@ public class IdentityScreen extends Screen {
                 continue;
             }
 
-            LivingEntity e = (LivingEntity) type.create(client.world);
-            renderEntities.put(type, e);
+            try {
+                LivingEntity e = (LivingEntity) type.create(client.world);
+                renderEntities.put(type, e);
+            } catch (Exception e) {
+                Identity.LOGGER.warn("Failed to create identity " + type.getEntityType().getTranslationKey(), e);
+            }
         }
 
 
@@ -126,6 +130,8 @@ public class IdentityScreen extends Screen {
 
         IdentityType<LivingEntity> current = IdentityType.from(PlayerIdentity.getIdentity(player));
 
+        List<IdentityType<?>> invalid = new ArrayList<>();
+
         for (int i = 0; i < list.size(); i++) {
             IdentityType<?> type = list.get(i);
             int xIdx = i % perRow, yIdx = i / perRow;
@@ -135,19 +141,28 @@ public class IdentityScreen extends Screen {
             boolean isCurr = current != null && current.equals(type);
             boolean fav    = PlayerFavorites.has(player, type);
 
-            // **Raw** EntityWidget, no <> or <?>
-            EntityWidget widget = new EntityWidget(
-                    x, y,
-                    Math.round(cellW), Math.round(cellH),
-                    type,
-                    renderEntities.get(type),
-                    this,
-                    fav,
-                    isCurr
-            );
+            try {
+                EntityWidget widget = new EntityWidget(
+                        x, y,
+                        Math.round(cellW), Math.round(cellH),
+                        type,
+                        renderEntities.get(type),
+                        this,
+                        fav,
+                        isCurr
+                );
 
-            addDrawableChild(widget);
-            entityWidgets.add(widget);
+                addDrawableChild(widget);
+                entityWidgets.add(widget);
+            } catch (Exception e) {
+                Identity.LOGGER.warn("Failed to add identity " + type.getEntityType().getTranslationKey(), e);
+                invalid.add(type);
+            }
+        }
+
+        if (!invalid.isEmpty()) {
+            unlocked.removeAll(invalid);
+            renderEntities.keySet().removeAll(invalid);
         }
     }
 
@@ -259,9 +274,15 @@ public class IdentityScreen extends Screen {
             // FULL FIX HERE:
             renderEntities.clear(); // 🔥 Clear old render entities!
             for (IdentityType<?> type : IdentityType.getAllTypes(client.world)) {
-                if (IdentityCompatUtils.isBlacklistedEntityType(type.getEntityType())) continue;
-                LivingEntity e = (LivingEntity) type.create(client.world);
-                renderEntities.put(type, e);
+                if (IdentityCompatUtils.isBlacklistedEntityType(type.getEntityType())) {
+                    continue;
+                }
+                try {
+                    LivingEntity e = (LivingEntity) type.create(client.world);
+                    renderEntities.put(type, e);
+                } catch (Exception e) {
+                    Identity.LOGGER.warn("Failed to create identity " + type.getEntityType().getTranslationKey(), e);
+                }
             }
 
             unlocked.clear();
