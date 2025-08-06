@@ -4,6 +4,7 @@ import dev.architectury.platform.Platform;
 import draylar.identity.Identity;
 import draylar.identity.api.platform.IdentityPlatform;
 import draylar.identity.forge.ability.AlexsMobsAbilityRegistry;
+import draylar.identity.forge.ability.NaturalistAbilityRegistry;
 import draylar.identity.forge.config.ConfigLoader;
 import draylar.identity.forge.config.ForgeConfigReloader;
 import draylar.identity.forge.config.IdentityForgeConfig;
@@ -17,6 +18,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class IdentityForge {
 
     public static final boolean isAlexsMobsLoaded = IdentityCompatUtils.isAlexsMobsLoaded();
+    public static final boolean isNaturalistLoaded = IdentityCompatUtils.isNaturalistLoaded();
     public static final int CONFIG_VERSION = 5;
     public static IdentityForgeConfig CONFIG;
 
@@ -40,6 +42,7 @@ public class IdentityForge {
     private void setup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             AlexsMobsAbilityRegistry.init();
+            NaturalistAbilityRegistry.init();
         });
     }
 
