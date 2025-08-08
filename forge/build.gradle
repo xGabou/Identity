@@ -37,10 +37,10 @@ dependencies {
     modRuntimeOnly "curse.maven:alexs-mobs-426558:5698791"
     modRuntimeOnly "curse.maven:citadel-331936:5633260"
 
-    modCompileOnly "curse.maven:naturalist-627986:6509918"
-    modRuntimeOnly "curse.maven:naturalist-627986:6509918"
-    modImplementation("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
-    modImplementation include ("maven.modrinth:midnightlib:${project.midnightlib_forge_version}-forge")
+    //modCompileOnly "curse.maven:naturalist-627986:6509918"
+    //modRuntimeOnly "curse.maven:naturalist-627986:6509918"
+    //modImplementation("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
+    //modImplementation include ("maven.modrinth:midnightlib:${project.midnightlib_forge_version}-forge")
 
     common(project(path: ":common", configuration: "namedElements")) { transitive = false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
