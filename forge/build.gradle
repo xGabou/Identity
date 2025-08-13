@@ -41,7 +41,8 @@ dependencies {
 //    modRuntimeOnly "curse.maven:naturalist-627986:6509918"
     modCompileOnly("com.starfish_studios:naturalist-5.0pre4+forge-1.20.1")
     modRuntimeOnly("com.starfish_studios:naturalist-5.0pre4+forge-1.20.1")
-    modImplementation("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
+    modRuntimeOnly("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
+    modCompileOnly("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
     modImplementation include ("maven.modrinth:midnightlib:${project.midnightlib_forge_version}-forge")
 
     common(project(path: ":common", configuration: "namedElements")) { transitive = false }
