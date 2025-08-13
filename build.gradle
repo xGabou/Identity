@@ -69,6 +69,7 @@ allprojects {
             }
         }
         maven { url "https://maven.shedaniel.me/" }
+        flatDir { dir 'libs' }
     }
 
     tasks.withType(JavaCompile) {
