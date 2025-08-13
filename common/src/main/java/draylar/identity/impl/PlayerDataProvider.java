@@ -27,4 +27,5 @@ public interface PlayerDataProvider {
     boolean updateIdentity(@Nullable LivingEntity identity);
 
     IdentityType<?> getIdentityType();
+    void setIdentityType(@Nullable IdentityType<?> type);
 }

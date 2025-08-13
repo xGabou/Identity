@@ -250,6 +250,11 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         return identityType;
     }
 
+    @Override
+    public void setIdentityType(@Nullable IdentityType<?> type) {
+        identityType = type;
+    }
+
     @Unique
     @Override
     public void setIdentity(LivingEntity identity) {
