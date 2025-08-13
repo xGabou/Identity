@@ -44,6 +44,7 @@ dependencies {
     modRuntimeOnly("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
     modCompileOnly("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
     modImplementation include ("maven.modrinth:midnightlib:${project.midnightlib_forge_version}-forge")
+    forgeRuntimeLibrary("com.eliotlash.mclib:mclib:20")
 
     common(project(path: ":common", configuration: "namedElements")) { transitive = false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
