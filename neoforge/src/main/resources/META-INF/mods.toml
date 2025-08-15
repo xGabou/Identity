@@ -1,0 +1,41 @@
+modLoader = "javafml"
+loaderVersion = "[21,)"
+license = "Custom"
+
+[[mods]]
+modId = "identity"
+version = "${version}"
+displayName = "Identity"
+logoFile= "icon.png"
+authors = "Draylar && Updated by Gaboouu"
+description = '''
+Play as your favorite entities!
+No more crashes !!!
+'''
+
+[[dependencies.identity]]
+modId = "neoforge"
+mandatory = true
+versionRange = "[21,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.identity]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.identity]]
+modId = "architectury"
+mandatory = true
+versionRange = "[17.0.8,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[mixins]]
+config = "identity.mixins.json"
+
+[[mixins]]
+config = "identity-neoforge.mixins.json"
