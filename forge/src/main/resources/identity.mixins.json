@@ -4,7 +4,8 @@
     "package": "draylar.identity.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "PlayerEntityMixin"
+        "PlayerEntityMixin",
+        "ServerPlayerEntityMixin"
     ],
     "injectors": {
         "defaultRequire": 1
