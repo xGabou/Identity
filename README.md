@@ -1,6 +1,6 @@
 # Identity
 
-*Identity* is a mod inspired by [Morph](https://www.curseforge.com/minecraft/mc-mods/morph), built for both Fabric and Forge mod loader.
+*Identity* is a Minecraft Forge mod inspired by [Morph](https://www.curseforge.com/minecraft/mc-mods/morph).
 This version is actively maintained and updated by me, as the original creator seems to have stepped away from further development.
 
 
@@ -8,15 +8,11 @@ This version is actively maintained and updated by me, as the original creator s
 
 **Versions**:
 
-|        | Fabric | Forge |
-|--------| ----------- | ----------- |
-| 1.20.1 | ✅   | ✅    |
+|        | Forge |
+|--------|-------|
+| 1.21.1 | ✅    |
 
-**Required Libraries (1.20.1):**
-
-Fabric => [Architectury API (Fabric)](https://www.curseforge.com/minecraft/mc-mods/architectury-fabric)
-
-Forge => [Architectury API (Forge)](https://www.curseforge.com/minecraft/mc-mods/architectury-forge)
+This project targets Minecraft 1.21.1 on Forge and builds using JDK 21.
 
 ---
 
@@ -39,3 +35,4 @@ To unlock an *Identity*, kill a nearby mob. You'll see a notification above your
 ### License
 
 Identity is licensed under MIT. 
+
