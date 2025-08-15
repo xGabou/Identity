@@ -27,13 +27,3 @@ versionRange = "[1.21.1,)"
 ordering = "NONE"
 side = "BOTH"
 
-
-[[mixins]]
-config = "identity.mixins.json"
-
-[[mixins]]
-config = "identity-forge.mixins.json"
-
-[[mixins]]
-config = "identity.alexsmobs.mixins.json"
-
