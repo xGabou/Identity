@@ -1,6 +1,6 @@
 # Identity
 
-*Identity* is a mod inspired by [Morph](https://www.curseforge.com/minecraft/mc-mods/morph), built for both Fabric and Forge mod loader.
+*Identity* is a mod inspired by [Morph](https://www.curseforge.com/minecraft/mc-mods/morph), built for both Fabric and NeoForge mod loader.
 This version is actively maintained and updated by me, as the original creator seems to have stepped away from further development.
 
 
@@ -8,7 +8,7 @@ This version is actively maintained and updated by me, as the original creator s
 
 **Versions**:
 
-|        | Fabric | Forge |
+|        | Fabric | NeoForge |
 |--------| ----------- | ----------- |
 | 1.20.1 | ✅   | ✅    |
 
@@ -16,7 +16,7 @@ This version is actively maintained and updated by me, as the original creator s
 
 Fabric => [Architectury API (Fabric)](https://www.curseforge.com/minecraft/mc-mods/architectury-fabric)
 
-Forge => [Architectury API (Forge)](https://www.curseforge.com/minecraft/mc-mods/architectury-forge)
+NeoForge => [Architectury API (NeoForge)](https://www.curseforge.com/minecraft/mc-mods/architectury-neoforge)
 
 ---
 

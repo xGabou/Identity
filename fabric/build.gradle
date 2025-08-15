@@ -34,7 +34,7 @@ dependencies {
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive = false }
 
     // config
-    modImplementation include ("dev.draylar.omega-config:omega-config-base:1.4.0+1.20.1") {
+    modImplementation include ("dev.draylar.omega-config:omega-config-base:1.4.0+1.21.1") {
         exclude group: "net.fabricmc.fabric-api"
     }
 }

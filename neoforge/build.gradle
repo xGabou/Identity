@@ -1,0 +1,88 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+loom {
+    neoForge {
+        mixinConfigs = [
+                "identity-neoforge.mixins.json",
+                "identity.mixins.json"
+        ]
+    }
+}
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+configurations {
+    common
+    shadowCommon
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:${rootProject.minecraft_version}-${rootProject.neoforge_version}"
+    modApi "dev.architectury:architectury-neoforge:${rootProject.architectury_version}"
+
+//    modCompileOnly "curse.maven:naturalist-627986:6509918"
+//    modRuntimeOnly "curse.maven:naturalist-627986:6509918"
+    modCompileOnly("com.starfish_studios:naturalist-5.0pre4+neoforge-1.21.1")
+    modRuntimeOnly("com.starfish_studios:naturalist-5.0pre4+neoforge-1.21.1")
+    modRuntimeOnly("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
+    modCompileOnly("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
+    modImplementation include ("maven.modrinth:midnightlib:${project.midnightlib_neoforge_version}-neoforge")
+    neoForgeRuntimeLibrary("com.eliotlash.mclib:mclib:20")
+
+    common(project(path: ":common", configuration: "namedElements")) { transitive = false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive = false }
+}
+
+processResources {
+    inputs.property "version", project.version.toString()
+
+    filesMatching("META-INF/mods.toml") {
+        expand("version": project.version.toString())
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowCommon]
+    archiveClassifier.set("dev-shadow")
+    exclude("fabric.mod.json")
+}
+
+remapJar {
+    input.set(shadowJar.archiveFile)
+    dependsOn(shadowJar)
+    archiveClassifier.set("neoforge")
+}
+
+jar {
+    archiveClassifier.set("dev")
+}
+
+sourcesJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    def commonSources = project(":common").sourcesJar
+    dependsOn(commonSources)
+    from(commonSources.archiveFile.map { zipTree(it) })
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
+}
+
+publishing {
+    publications {
+        mavenNeoForge(MavenPublication) {
+            artifactId = rootProject.archives_base_name + "-" + project.name
+            from components.java
+        }
+    }
+}
