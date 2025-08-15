@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[47,)"
+loaderVersion = "[52,)"
 license = "Custom"
 
 [[mods]]
@@ -16,29 +16,17 @@ No more crashes !!!
 [[dependencies.identity]]
 modId = "forge"
 mandatory = true
-versionRange = "[47,)"
+versionRange = "[52,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.identity]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20.1,)"
+versionRange = "[1.21.1,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.identity]]
-modId = "architectury"
-mandatory = true
-versionRange = "[9.2.14,)"
-ordering = "AFTER"
-side = "BOTH"
 
 [[mixins]]
 config = "identity.mixins.json"
-
-[[mixins]]
-config = "identity-forge.mixins.json"
-
-[[mixins]]
-config = "identity.alexsmobs.mixins.json"

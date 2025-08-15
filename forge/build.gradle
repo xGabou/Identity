@@ -1,97 +1,36 @@
 plugins {
-    id 'com.github.johnrengelman.shadow'
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0+'
+    id 'maven-publish'
 }
 
-loom {
-    forge {
-        mixinConfigs = [
-                "identity-forge.mixins.json",
-                "identity.mixins.json",
-                "identity.alexsmobs.mixins.json"
-        ]
+group = rootProject.maven_group
+version = rootProject.mod_version
+base {
+    archivesName = rootProject.archives_base_name
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
     }
+    withSourcesJar()
 }
 
-architectury {
-    platformSetupLoomIde()
-    forge()
+minecraft {
+    mappings channel: 'official', version: rootProject.minecraft_version
 }
 
-configurations {
-    common
-    shadowCommon
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentForge.extendsFrom common
+repositories {
+    maven { url = 'https://maven.minecraftforge.net/' }
+    mavenCentral()
 }
 
 dependencies {
-    forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
-    modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
-
-    // Forge-only optional dependencies for compilation
-    modCompileOnly "curse.maven:alexs-mobs-426558:5698791"
-    modCompileOnly "curse.maven:citadel-331936:5633260"
-
-    // Forge-only runtime dependencies for development
-    modRuntimeOnly "curse.maven:alexs-mobs-426558:5698791"
-    modRuntimeOnly "curse.maven:citadel-331936:5633260"
-
-//    modCompileOnly "curse.maven:naturalist-627986:6509918"
-//    modRuntimeOnly "curse.maven:naturalist-627986:6509918"
-    modCompileOnly("com.starfish_studios:naturalist-5.0pre4+forge-1.20.1")
-    modRuntimeOnly("com.starfish_studios:naturalist-5.0pre4+forge-1.20.1")
-    modRuntimeOnly("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
-    modCompileOnly("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
-    modImplementation include ("maven.modrinth:midnightlib:${project.midnightlib_forge_version}-forge")
-    forgeRuntimeLibrary("com.eliotlash.mclib:mclib:20")
-
-    common(project(path: ":common", configuration: "namedElements")) { transitive = false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
+    minecraft "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
 }
 
-processResources {
-    inputs.property "version", project.version.toString()
-
-    filesMatching("META-INF/mods.toml") {
-        expand("version": project.version.toString())
-    }
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
 
-shadowJar {
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set("dev-shadow")
-    exclude("fabric.mod.json")
-}
-
-remapJar {
-    input.set(shadowJar.archiveFile)
-    dependsOn(shadowJar)
-    archiveClassifier.set("forge")
-}
-
-jar {
-    archiveClassifier.set("dev")
-}
-
-sourcesJar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    def commonSources = project(":common").sourcesJar
-    dependsOn(commonSources)
-    from(commonSources.archiveFile.map { zipTree(it) })
-}
-
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
-    }
-}
-
-publishing {
-    publications {
-        mavenForge(MavenPublication) {
-            artifactId = rootProject.archives_base_name + "-" + project.name
-            from components.java
-        }
-    }
-}

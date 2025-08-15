@@ -1,0 +1,12 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "draylar.identity.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "mixins": [
+        "PlayerEntityMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}
