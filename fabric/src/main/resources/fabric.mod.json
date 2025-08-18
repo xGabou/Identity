@@ -1,36 +1,42 @@
 {
-  "schemaVersion": 1,
-  "id": "identity",
-  "version": "${version}",
-  "name": "Identity",
-  "description": "Play as your favorite entities!",
-  "authors": [
-    "Draylar",
-    "Gaboouu"
-  ],
-  "contributors": [
-    "James103",
-    "Pyrofab",
-    "AllanChain"
-  ],
-  "license": "MIT",
-  "icon": "assets/identity/icon.png",
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "draylar.identity.fabric.IdentityFabric"
+    "schemaVersion": 1,
+    "id": "identity",
+    "version": "${version}",
+    "name": "Identity",
+    "description": "Play as your favorite entities!",
+    "authors": [
+        "Draylar",
+        "Gaboouu"
     ],
-    "client": [
-      "draylar.identity.fabric.IdentityFabricClient"
-    ]
-  },
-  "mixins": [
-    "identity.mixins.json",
-    "identity-fabric.mixins.json"
-  ],
-  "depends": {
-    "fabricloader": ">=0.8.7+build.201",
-    "fabric": "*",
-    "architectury": "*"
-  }
+    "contributors": [
+        "James103",
+        "Pyrofab",
+        "AllanChain"
+    ],
+    "license": "MIT",
+    "icon": "assets/identity/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "draylar.identity.fabric.IdentityFabric"
+        ],
+        "client": [
+            "draylar.identity.fabric.IdentityFabricClient"
+        ],
+        "modmenu": [
+            "draylar.identity.fabric.IdentityModMenuIntegration"
+        ]
+    },
+    "mixins": [
+        "identity.mixins.json",
+        "identity-fabric.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.8.7+build.201",
+        "fabric": "*",
+        "architectury": "*"
+    },
+    "suggests": {
+        "modmenu": "*"
+    }
 }

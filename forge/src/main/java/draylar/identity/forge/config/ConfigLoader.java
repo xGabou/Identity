@@ -55,6 +55,12 @@ public class ConfigLoader {
         }
     }
 
+    public static void save(IdentityForgeConfig config) {
+        Path configFolder = Platform.getConfigFolder();
+        Path configFile = Paths.get(configFolder.toString(), "identity.json");
+        writeConfigFile(configFile, config);
+    }
+
     private static void writeConfigFile(Path file, IdentityForgeConfig config) {
         try {
             if (!Files.exists(file)) {
