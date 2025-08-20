@@ -68,6 +68,10 @@ allprojects {
                 includeGroup("com.eliotlash.mclib")
             }
         }
+        maven {
+            name = "Terraformers"
+            url = "https://maven.terraformersmc.com/"
+        }
         maven { url "https://maven.shedaniel.me/" }
         flatDir { dir 'libs' }
     }
