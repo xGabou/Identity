@@ -6,13 +6,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
 
 public class CreeperAbility extends IdentityAbility<CreeperEntity> {
 
     @Override
     public void onUse(PlayerEntity player, CreeperEntity identity, World world) {
-        world.createExplosion(player, player.getX(), player.getY(), player.getZ(), 3.0f, World.ExplosionSourceType.NONE);
+        float power = identity.isCharged() ? 6.0f : 3.0f;
+        world.createExplosion(player, player.getX(), player.getY(), player.getZ(), power, World.ExplosionSourceType.NONE);
     }
 
     @Override
