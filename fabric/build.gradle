@@ -28,7 +28,7 @@ dependencies {
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
 
-    modImplementation fernflowerDecompilerClasspath("curse.maven:minecraft-comes-alive-reborn-535291:6805928")
+    //modImplementation fernflowerDecompilerClasspath("curse.maven:minecraft-comes-alive-reborn-535291:6805928")
 
     common(project(path: ":common", configuration: "namedElements")) { transitive = false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive = false }
@@ -37,7 +37,7 @@ dependencies {
     modImplementation include ("dev.draylar.omega-config:omega-config-base:1.4.0+1.20.1") {
         exclude group: "net.fabricmc.fabric-api"
     }
-    modImplementation "com.terraformersmc:modmenu:${rootProject.modmenu_version}"
+    //modImplementation "com.terraformersmc:modmenu:${rootProject.modmenu_version}"
     modImplementation include("me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }

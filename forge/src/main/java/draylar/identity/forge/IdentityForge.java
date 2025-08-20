@@ -5,6 +5,7 @@ import draylar.identity.Identity;
 import draylar.identity.api.platform.IdentityPlatform;
 import draylar.identity.forge.ability.AlexsMobsAbilityRegistry;
 //import draylar.identity.forge.ability.NaturalistAbilityRegistry;
+import draylar.identity.forge.ability.NaturalistAbilityRegistry;
 import draylar.identity.forge.config.ConfigLoader;
 import draylar.identity.forge.config.ForgeConfigReloader;
 import draylar.identity.forge.config.IdentityForgeConfig;
@@ -36,8 +37,6 @@ public class IdentityForge {
 //            ForgeLivingEntityCompatProvider.init(); // qui utilise Bjorn
 //        }
         if (Platform.getEnv().isClient()) {
-            ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class,
-                    () -> new ConfigGuiHandler.ConfigGuiFactory((mc, screen) -> new IdentityForgeConfigScreen(screen)));
             new IdentityForgeClient();
         }
     }
@@ -46,7 +45,7 @@ public class IdentityForge {
     private void setup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             AlexsMobsAbilityRegistry.init();
-//            NaturalistAbilityRegistry.init();
+            NaturalistAbilityRegistry.init();
         });
     }
 
