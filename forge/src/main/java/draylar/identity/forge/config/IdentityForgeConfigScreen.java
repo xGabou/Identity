@@ -5,10 +5,12 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +22,10 @@ import java.util.stream.Collectors;
 public class IdentityForgeConfigScreen extends Screen {
     private final Screen parent;
     private final List<LabelEntry> labels = new ArrayList<>();
+    private final List<WidgetEntry> widgets = new ArrayList<>();
+
+    private int contentHeight;
+    private int scroll;
 
     private TextFieldWidget hostilityTimeBox;
     private TextFieldWidget advancementsRequiredForFlightBox;
@@ -93,6 +99,8 @@ public class IdentityForgeConfigScreen extends Screen {
         requiredKillsBox = addIntField(centerX, y, "Required Kills For Identity", config.requiredKillsForIdentity);
         y += 40;
         forcedIdentityBox = addStringField(centerX, y, "Forced Identity", config.forcedIdentity == null ? "" : config.forcedIdentity);
+        contentHeight = y + 40;
+        updateWidgetPositions();
 
         addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> {
             saveChanges();
@@ -107,24 +115,25 @@ public class IdentityForgeConfigScreen extends Screen {
         TextFieldWidget display = new TextFieldWidget(textRenderer, centerX - 100, y + 10, 200, 20, Text.empty());
         display.setText(String.join(",", target));
         display.setEditable(false);
-        addDrawableChild(display);
-        CyclingButtonWidget<Object> dropdown = addDrawableChild(
+        addEntry(display, y + 10);
+        CyclingButtonWidget<Identifier> dropdown = addEntry(
                 CyclingButtonWidget.builder(id -> Text.literal(id.toString()))
                         .values(ids)
-                        .build(centerX - 100, y + 40, 150, 20, Text.literal("Select"), (btn, value) -> {}));
-        addDrawableChild(ButtonWidget.builder(Text.literal("Add"), btn -> {
+                        .build(centerX - 100, y + 40, 150, 20, Text.literal("Select"), (btn, value) -> {}),
+                y + 40);
+        addEntry(ButtonWidget.builder(Text.literal("Add"), btn -> {
             String idString = dropdown.getValue().toString();
             if (!target.contains(idString)) {
                 target.add(idString);
                 display.setText(String.join(",", target));
             }
-        }).dimensions(centerX + 52, y + 40, 48, 20).build());
+        }).dimensions(centerX + 52, y + 40, 48, 20).build(), y + 40);
         return y + 70;
     }
 
     private int addBoolean(int centerX, int y, String label, boolean initial, Consumer<Boolean> setter) {
-        addDrawableChild(CyclingButtonWidget.onOffBuilder(initial)
-                .build(centerX - 100, y, 200, 20, Text.literal(label), (btn, value) -> setter.accept(value)));
+        addEntry(CyclingButtonWidget.onOffBuilder(initial)
+                .build(centerX - 100, y, 200, 20, Text.literal(label), (btn, value) -> setter.accept(value)), y);
         return y + 24;
     }
 
@@ -133,32 +142,33 @@ public class IdentityForgeConfigScreen extends Screen {
         TextFieldWidget box = new TextFieldWidget(textRenderer, centerX - 100, y + 10, 200, 20, Text.empty());
         box.setText(Integer.toString(value));
         box.setTextPredicate(s -> s.matches("-?\\d*"));
-        addDrawableChild(box);
-        return box;
+        return addEntry(box, y + 10);
     }
 
     private TextFieldWidget addFloatField(int centerX, int y, String label, float value) {
         labels.add(new LabelEntry(label, centerX - 100, y));
         TextFieldWidget box = new TextFieldWidget(textRenderer, centerX - 100, y + 10, 200, 20, Text.empty());
         box.setText(Float.toString(value));
-        addDrawableChild(box);
-        return box;
+        return addEntry(box, y + 10);
     }
 
     private TextFieldWidget addStringField(int centerX, int y, String label, String value) {
         labels.add(new LabelEntry(label, centerX - 100, y));
         TextFieldWidget box = new TextFieldWidget(textRenderer, centerX - 100, y + 10, 200, 20, Text.empty());
         box.setText(value);
-        addDrawableChild(box);
-        return box;
+        return addEntry(box, y + 10);
     }
 
     private TextFieldWidget addListField(int centerX, int y, String label, List<String> list) {
         labels.add(new LabelEntry(label, centerX - 100, y));
         TextFieldWidget box = new TextFieldWidget(textRenderer, centerX - 100, y + 10, 200, 20, Text.empty());
         box.setText(String.join(",", list));
-        addDrawableChild(box);
-        return box;
+        return addEntry(box, y + 10);
+    }
+
+    private <T extends ClickableWidget> T addEntry(T widget, int y) {
+        widgets.add(new WidgetEntry(widget, y));
+        return addDrawableChild(widget);
     }
 
     private void saveChanges() {
@@ -203,15 +213,29 @@ public class IdentityForgeConfigScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         renderBackground(context);
         for (LabelEntry label : labels) {
-            context.drawText(textRenderer, Text.literal(label.text), label.x, label.y, 0xFFFFFF, false);
+            context.drawText(textRenderer, Text.literal(label.text), label.x, label.y - scroll, 0xFFFFFF, false);
         }
         super.render(context, mouseX, mouseY, delta);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        scroll -= amount * 20;
+        scroll = MathHelper.clamp(scroll, 0, Math.max(contentHeight - (this.height - 40), 0));
+        updateWidgetPositions();
+        return super.mouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override
     public void close() {
         if (client != null) {
             client.setScreen(parent);
+        }
+    }
+
+    private void updateWidgetPositions() {
+        for (WidgetEntry entry : widgets) {
+            entry.widget.setY(entry.baseY - scroll);
         }
     }
 
@@ -224,6 +248,16 @@ public class IdentityForgeConfigScreen extends Screen {
             this.text = text;
             this.x = x;
             this.y = y;
+        }
+    }
+
+    private static class WidgetEntry {
+        final ClickableWidget widget;
+        final int baseY;
+
+        WidgetEntry(ClickableWidget widget, int baseY) {
+            this.widget = widget;
+            this.baseY = baseY;
         }
     }
 }
