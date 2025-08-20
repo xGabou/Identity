@@ -1,10 +1,10 @@
 package draylar.identity.forge.config;
 
 import draylar.identity.forge.IdentityForge;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.registry.Registries;
@@ -13,20 +13,35 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * Forge-side config screen for Identity (hand-rolled UI).
+ * - Uses a scrollable viewport with scissor clipping so content never draws over the bottom bar.
+ * - Entity pickers open a searchable list (EntityPickerScreen) and append to the target list.
+ */
 public class IdentityForgeConfigScreen extends Screen {
+
     private final Screen parent;
+
+    /** logical labels that we render ourselves (so we can clip them) */
     private final List<LabelEntry> labels = new ArrayList<>();
+    /** content widgets we render/position manually (so we can clip them) */
     private final List<WidgetEntry> widgets = new ArrayList<>();
 
+    /** total content height after laying out */
     private int contentHeight;
+    /** current scroll offset (pixels) */
     private int scroll;
 
+    // viewport (clipping) for scrollable area
+    private int viewportTop = 20;
+    private int viewportBottom;
+
+    // inputs
     private TextFieldWidget hostilityTimeBox;
     private TextFieldWidget advancementsRequiredForFlightBox;
     private TextFieldWidget maxHealthBox;
@@ -36,6 +51,9 @@ public class IdentityForgeConfigScreen extends Screen {
     private TextFieldWidget requiredKillsBox;
     private TextFieldWidget forcedIdentityBox;
 
+    // fixed bottom widgets
+    private ButtonWidget doneButton;
+
     public IdentityForgeConfigScreen(Screen parent) {
         super(Text.literal("Identity Config"));
         this.parent = parent;
@@ -43,20 +61,33 @@ public class IdentityForgeConfigScreen extends Screen {
 
     @Override
     protected void init() {
-        IdentityForgeConfig config = IdentityForge.CONFIG;
-        int centerX = this.width / 2;
-        int y = 20;
+        // Clear previous state on resize/reopen
+        this.clearChildren();
+        this.labels.clear();
+        this.widgets.clear();
+        this.scroll = 0;
 
+        IdentityForgeConfig config = IdentityForge.CONFIG;
+
+        int centerX = this.width / 2;
+        viewportTop = 20;
+        viewportBottom = this.height - 40; // bottom bar reserved area
+
+        // sorted list of all entity ids (for pickers)
         List<Identifier> ids = Registries.ENTITY_TYPE.getIds()
                 .stream()
                 .sorted(Comparator.comparing(Identifier::toString))
                 .collect(Collectors.toList());
 
+        int y = viewportTop;
+
+        // Sections with entity list pickers
         y = addEntitySection(centerX, y, "Extra Aquatic Entities", ids, config.extraAquaticEntities());
         y = addEntitySection(centerX, y, "Removed Aquatic Entities", ids, config.removedAquaticEntities());
         y = addEntitySection(centerX, y, "Extra Flying Entities", ids, config.extraFlyingEntities());
         y = addEntitySection(centerX, y, "Removed Flying Entities", ids, config.removedFlyingEntities());
 
+        // Toggles
         y = addBoolean(centerX, y, "Overlay Identity Unlocks", config.overlayIdentityUnlocks, v -> config.overlayIdentityUnlocks = v);
         y = addBoolean(centerX, y, "Overlay Identity Revokes", config.overlayIdentityRevokes, v -> config.overlayIdentityRevokes = v);
         y = addBoolean(centerX, y, "Revoke Identity On Death", config.revokeIdentityOnDeath, v -> config.revokeIdentityOnDeath = v);
@@ -84,6 +115,7 @@ public class IdentityForgeConfigScreen extends Screen {
         y = addBoolean(centerX, y, "Warden Is Blinded", config.wardenIsBlinded, v -> config.wardenIsBlinded = v);
         y = addBoolean(centerX, y, "Warden Blinds Nearby", config.wardenBlindsNearby, v -> config.wardenBlindsNearby = v);
 
+        // Inputs
         hostilityTimeBox = addIntField(centerX, y, "Hostility Time", config.hostilityTime);
         y += 40;
         advancementsRequiredForFlightBox = addListField(centerX, y, "Advancements Required For Flight", config.advancementsRequiredForFlight());
@@ -99,42 +131,57 @@ public class IdentityForgeConfigScreen extends Screen {
         requiredKillsBox = addIntField(centerX, y, "Required Kills For Identity", config.requiredKillsForIdentity);
         y += 40;
         forcedIdentityBox = addStringField(centerX, y, "Forced Identity", config.forcedIdentity == null ? "" : config.forcedIdentity);
-        contentHeight = y + 40;
+        y += 40;
+
+        contentHeight = y;
         updateWidgetPositions();
 
-        addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> {
+        // Fixed bottom bar: Done button (rendered after scissor)
+        doneButton = ButtonWidget.builder(Text.translatable("gui.done"), button -> {
             saveChanges();
-            if (client != null) {
-                client.setScreen(parent);
-            }
-        }).dimensions(centerX - 100, this.height - 28, 200, 20).build());
+            if (client != null) client.setScreen(parent);
+        }).dimensions(centerX - 100, this.height - 28, 200, 20).build();
+        addDrawableChild(doneButton);
     }
 
+    /** Adds an entity picker row: label + readonly display + "Select…" button that opens EntityPickerScreen. */
     private int addEntitySection(int centerX, int y, String label, List<Identifier> ids, List<String> target) {
         labels.add(new LabelEntry(label, centerX - 100, y));
+
         TextFieldWidget display = new TextFieldWidget(textRenderer, centerX - 100, y + 10, 200, 20, Text.empty());
         display.setText(String.join(",", target));
         display.setEditable(false);
         addEntry(display, y + 10);
-        CyclingButtonWidget<Identifier> dropdown = addEntry(
-                CyclingButtonWidget.builder(id -> Text.literal(id.toString()))
-                        .values(ids)
-                        .build(centerX - 100, y + 40, 150, 20, Text.literal("Select"), (btn, value) -> {}),
-                y + 40);
-        addEntry(ButtonWidget.builder(Text.literal("Add"), btn -> {
-            String idString = dropdown.getValue().toString();
-            if (!target.contains(idString)) {
-                target.add(idString);
-                display.setText(String.join(",", target));
-            }
-        }).dimensions(centerX + 52, y + 40, 48, 20).build(), y + 40);
+
+        ButtonWidget picker = ButtonWidget.builder(Text.literal("Select…"), b -> {
+            if (client == null) return;
+            client.setScreen(new EntityPickerScreen(this, pickedId -> {
+                String idString = pickedId.toString();
+                if (!target.contains(idString)) {
+                    target.add(idString);
+                    display.setText(String.join(",", target));
+                }
+            }));
+        }).dimensions(centerX - 100, y + 40, 150, 20).build();
+        addEntry(picker, y + 40);
+
         return y + 70;
     }
 
     private int addBoolean(int centerX, int y, String label, boolean initial, Consumer<Boolean> setter) {
-        addEntry(CyclingButtonWidget.onOffBuilder(initial)
-                .build(centerX - 100, y, 200, 20, Text.literal(label), (btn, value) -> setter.accept(value)), y);
+        ButtonWidget toggle = ButtonWidget.builder(Text.literal(label + ": " + (initial ? "ON" : "OFF")), btn -> {
+            boolean newVal = !labelTextIsOn(btn.getMessage().getString());
+            setter.accept(newVal);
+            btn.setMessage(Text.literal(label + ": " + (newVal ? "ON" : "OFF")));
+        }).dimensions(centerX - 100, y, 200, 20).build();
+        addEntry(toggle, y);
         return y + 24;
+    }
+
+    private static boolean labelTextIsOn(String s) {
+        int i = s.lastIndexOf(':');
+        if (i < 0 || i + 2 >= s.length()) return false;
+        return s.substring(i + 2).equalsIgnoreCase("ON");
     }
 
     private TextFieldWidget addIntField(int centerX, int y, String label, int value) {
@@ -166,84 +213,156 @@ public class IdentityForgeConfigScreen extends Screen {
         return addEntry(box, y + 10);
     }
 
+    /** Track a content widget and add as child so it still receives input. */
     private <T extends ClickableWidget> T addEntry(T widget, int y) {
         widgets.add(new WidgetEntry(widget, y));
         return addDrawableChild(widget);
     }
 
-    private void saveChanges() {
-        IdentityForgeConfig config = IdentityForge.CONFIG;
-        config.hostilityTime = parseInt(hostilityTimeBox.getText(), config.hostilityTime);
-        config.advancementsRequiredForFlight().clear();
-        config.advancementsRequiredForFlight().addAll(split(advancementsRequiredForFlightBox.getText()));
-        config.maxHealth = parseInt(maxHealthBox.getText(), config.maxHealth);
-        config.allowedSwappers().clear();
-        config.allowedSwappers().addAll(split(allowedSwappersBox.getText()));
-        config.endermanAbilityTeleportDistance = parseInt(endermanTeleportBox.getText(), config.endermanAbilityTeleportDistance);
-        config.flySpeed = parseFloat(flySpeedBox.getText(), config.flySpeed);
-        config.requiredKillsForIdentity = parseInt(requiredKillsBox.getText(), config.requiredKillsForIdentity);
-        config.forcedIdentity = forcedIdentityBox.getText().isEmpty() ? null : forcedIdentityBox.getText();
-        ConfigLoader.save(config);
-    }
-
-    private int parseInt(String s, int def) {
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            return def;
-        }
-    }
-
-    private float parseFloat(String s, float def) {
-        try {
-            return Float.parseFloat(s);
-        } catch (NumberFormatException e) {
-            return def;
-        }
-    }
-
-    private List<String> split(String text) {
-        return Arrays.stream(text.split(","))
-                .map(String::trim)
-                .filter(t -> !t.isEmpty())
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context);
-        for (LabelEntry label : labels) {
-            context.drawText(textRenderer, Text.literal(label.text), label.x, label.y - scroll, 0xFFFFFF, false);
-        }
-        super.render(context, mouseX, mouseY, delta);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        scroll -= amount * 20;
-        scroll = MathHelper.clamp(scroll, 0, Math.max(contentHeight - (this.height - 40), 0));
-        updateWidgetPositions();
-        return super.mouseScrolled(mouseX, mouseY, amount);
-    }
-
-    @Override
-    public void close() {
-        if (client != null) {
-            client.setScreen(parent);
-        }
-    }
-
+    /** Apply scroll to content widgets. */
     private void updateWidgetPositions() {
         for (WidgetEntry entry : widgets) {
             entry.widget.setY(entry.baseY - scroll);
         }
     }
 
+    private void saveChanges() {
+        IdentityForgeConfig config = IdentityForge.CONFIG;
+        config.hostilityTime = parseInt(hostilityTimeBox.getText(), config.hostilityTime);
+
+        config.advancementsRequiredForFlight().clear();
+        splitAndAdd(advancementsRequiredForFlightBox.getText(), config.advancementsRequiredForFlight());
+
+        config.maxHealth = parseInt(maxHealthBox.getText(), config.maxHealth);
+
+        config.allowedSwappers().clear();
+        splitAndAdd(allowedSwappersBox.getText(), config.allowedSwappers());
+
+        config.endermanAbilityTeleportDistance = parseInt(endermanTeleportBox.getText(), config.endermanAbilityTeleportDistance);
+        config.flySpeed = parseFloat(flySpeedBox.getText(), config.flySpeed);
+        config.requiredKillsForIdentity = parseInt(requiredKillsBox.getText(), config.requiredKillsForIdentity);
+        config.forcedIdentity = forcedIdentityBox.getText().isEmpty() ? null : forcedIdentityBox.getText();
+
+        ConfigLoader.save(config);
+    }
+
+    private static void splitAndAdd(String csv, List<String> out) {
+        if (csv == null || csv.isEmpty()) return;
+        for (String s : csv.split(",")) {
+            String t = s.trim();
+            if (!t.isEmpty()) out.add(t);
+        }
+    }
+
+    private int parseInt(String s, int def) {
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (Exception ignored) {
+            return def;
+        }
+    }
+
+    private float parseFloat(String s, float def) {
+        try {
+            return Float.parseFloat(s.trim());
+        } catch (Exception ignored) {
+            return def;
+        }
+    }
+
+    // ---------- Rendering & Input (with clipping) ----------
+
+    @Override
+    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+        // Background (use renderBackgroundTexture(ctx) if you want dirt everywhere)
+        this.renderBackground(ctx);
+
+        // Clip scrollable content so it never draws over bottom bar
+        ctx.enableScissor(0, viewportTop, this.width, viewportBottom);
+
+        // Render labels inside viewport
+        for (LabelEntry label : labels) {
+            int ly = label.y - scroll;
+            if (ly + 10 > viewportTop && ly < viewportBottom) {
+                ctx.drawText(textRenderer, Text.literal(label.text), label.x, ly, 0xFFFFFF, false);
+            }
+        }
+
+        // Render content widgets inside viewport
+        for (WidgetEntry entry : widgets) {
+            int wy = entry.widget.getY();
+            if (wy + entry.widget.getHeight() > viewportTop && wy < viewportBottom) {
+                entry.widget.render(ctx, mouseX, mouseY, delta);
+            }
+        }
+
+        ctx.disableScissor();
+
+        // Render fixed bottom widgets (outside scissor)
+        if (doneButton != null) {
+            doneButton.render(ctx, mouseX, mouseY, delta);
+        }
+
+        // Optional title
+        // ctx.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 6, 0xFFFFFF);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        // Scroll only when cursor is inside the viewport
+        if (mouseY >= viewportTop && mouseY <= viewportBottom) {
+            int maxScroll = Math.max(contentHeight - (viewportBottom - viewportTop), 0);
+            scroll = MathHelper.clamp(scroll - (int) (amount * 20), 0, maxScroll);
+            updateWidgetPositions();
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, amount);
+    }
+
+    // Prevent off-viewport content from intercepting clicks (so the Done button works)
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (mouseY >= viewportTop && mouseY <= viewportBottom) {
+            return super.mouseClicked(mouseX, mouseY, button);
+        } else {
+            return doneButton != null && doneButton.mouseClicked(mouseX, mouseY, button);
+        }
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (mouseY >= viewportTop && mouseY <= viewportBottom) {
+            return super.mouseReleased(mouseX, mouseY, button);
+        } else {
+            return doneButton != null && doneButton.mouseReleased(mouseX, mouseY, button);
+        }
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
+        if (mouseY >= viewportTop && mouseY <= viewportBottom) {
+            return super.mouseDragged(mouseX, mouseY, button, dx, dy);
+        }
+        return false;
+    }
+
+    @Override
+    public void close() {
+        if (client != null) client.setScreen(parent);
+    }
+
+    @Override
+    public boolean shouldPause() {
+        // Pause while configuring (optional; set false if you prefer live world)
+        return true;
+    }
+
+    // ---------- Helpers ----------
+
     private static class LabelEntry {
         final String text;
         final int x;
         final int y;
-
         LabelEntry(String text, int x, int y) {
             this.text = text;
             this.x = x;
@@ -254,7 +373,6 @@ public class IdentityForgeConfigScreen extends Screen {
     private static class WidgetEntry {
         final ClickableWidget widget;
         final int baseY;
-
         WidgetEntry(ClickableWidget widget, int baseY) {
             this.widget = widget;
             this.baseY = baseY;

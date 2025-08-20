@@ -36,6 +36,7 @@ dependencies {
     // Forge-only runtime dependencies for development
     modRuntimeOnly "curse.maven:alexs-mobs-426558:5698791"
     modRuntimeOnly "curse.maven:citadel-331936:5633260"
+    //modRuntimeOnly "curse.maven:sculk-horde-501766:6893408"
 
 //    modCompileOnly "curse.maven:naturalist-627986:6509918"
 //    modRuntimeOnly "curse.maven:naturalist-627986:6509918"
