@@ -153,20 +153,28 @@ public class IdentityForgeConfigScreen extends Screen {
         display.setEditable(false);
         addEntry(display, y + 10);
 
-        ButtonWidget picker = ButtonWidget.builder(Text.literal("Select…"), b -> {
+        // Select (add)
+        addEntry(ButtonWidget.builder(Text.literal("Select…"), b -> {
             if (client == null) return;
-            client.setScreen(new EntityPickerScreen(this, pickedId -> {
-                String idString = pickedId.toString();
-                if (!target.contains(idString)) {
-                    target.add(idString);
+            client.setScreen(new EntityPickerScreen(this, picked -> {
+                String s = picked.toString();
+                if (!target.contains(s)) {
+                    target.add(s);
                     display.setText(String.join(",", target));
                 }
             }));
-        }).dimensions(centerX - 100, y + 40, 150, 20).build();
-        addEntry(picker, y + 40);
+        }).dimensions(centerX - 100, y + 40, 98, 20).build(), y + 40);
+
+        // Manage (remove)
+        addEntry(ButtonWidget.builder(Text.literal("Manage…"), b -> {
+            if (client == null) return;
+            client.setScreen(new EntityListEditorScreen(this, target,
+                    () -> display.setText(String.join(",", target))));
+        }).dimensions(centerX + 2, y + 40, 98, 20).build(), y + 40);
 
         return y + 70;
     }
+
 
     private int addBoolean(int centerX, int y, String label, boolean initial, Consumer<Boolean> setter) {
         ButtonWidget toggle = ButtonWidget.builder(Text.literal(label + ": " + (initial ? "ON" : "OFF")), btn -> {
