@@ -11,7 +11,7 @@ public class CreeperAbility extends IdentityAbility<CreeperEntity> {
 
     @Override
     public void onUse(PlayerEntity player, CreeperEntity identity, World world) {
-        float power = identity.isCharged() ? 6.0f : 3.0f;
+        float power = identity.shouldRenderOverlay() ? 6.0f : 3.0f;
         world.createExplosion(player, player.getX(), player.getY(), player.getZ(), power, World.ExplosionSourceType.NONE);
     }
 

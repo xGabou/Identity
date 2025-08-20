@@ -2,16 +2,17 @@ package draylar.identity.fabric.config;
 
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.fabric.IdentityFabric;
-import draylar.omegaconfig.api.Comment;
-import draylar.omegaconfig.api.Config;
-import draylar.omegaconfig.api.Syncing;
+import me.shedaniel.autoconfig.ConfigData;
+import me.shedaniel.autoconfig.annotation.Config;
+import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class IdentityFabricConfig extends IdentityConfig implements Config {
+@Config(name = "identity")
+public class IdentityFabricConfig extends IdentityConfig implements ConfigData {
 
 
     @Comment(value = "Whether an overlay message appears above the hotbar when a new identity is unlocked.")
@@ -71,7 +72,7 @@ public class IdentityFabricConfig extends IdentityConfig implements Config {
     @Comment(value = "The maximum value of scaling health. Useful for not giving players 300 HP when they turn into a wither.")
     public int maxHealth = 40;
 
-    @Syncing
+
     @Comment(value = "If set to false, only operators can switch identities through the ` menu. Note that this config option is synced from S2C when a client joins the game, but a client can still open the menu if they have a modified version of Identity.")
     public boolean enableClientSwapMenu = true;
 
@@ -84,7 +85,6 @@ public class IdentityFabricConfig extends IdentityConfig implements Config {
     @Comment(value = "In blocks, how far can the Enderman ability teleport?")
     public int endermanAbilityTeleportDistance = 32;
 
-    @Syncing
     @Comment(value = "Should player nametags render above players disguised with an identity? Note that the server is the authority for this config option.")
     public boolean showPlayerNametag = false;
 
@@ -170,16 +170,6 @@ public class IdentityFabricConfig extends IdentityConfig implements Config {
             put("minecraft:evoker", 10);
         }
     };
-
-    @Override
-    public String getName() {
-        return "identity";
-    }
-
-    @Override
-    public String getExtension() {
-        return "json5";
-    }
 
     @Override
     public int getConfigVersion() {

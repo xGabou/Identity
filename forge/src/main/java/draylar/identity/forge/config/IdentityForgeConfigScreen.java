@@ -108,7 +108,7 @@ public class IdentityForgeConfigScreen extends Screen {
         display.setText(String.join(",", target));
         display.setEditable(false);
         addDrawableChild(display);
-        CyclingButtonWidget<Identifier> dropdown = addDrawableChild(
+        CyclingButtonWidget<Object> dropdown = addDrawableChild(
                 CyclingButtonWidget.builder(id -> Text.literal(id.toString()))
                         .values(ids)
                         .build(centerX - 100, y + 40, 150, 20, Text.literal("Select"), (btn, value) -> {}));
