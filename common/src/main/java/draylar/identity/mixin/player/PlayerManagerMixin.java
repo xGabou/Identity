@@ -15,7 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PlayerManagerMixin {
 
     @Inject(method = "respawnPlayer", at = @At(value = "RETURN"))
-    private void sendResyncPacketOnRespawn(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir) {
+    private void sendResyncPacketOnRespawn(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir) {
+        ServerPlayerEntity player = cir.getReturnValue();
         PlayerUnlocks.sync(player);
         PlayerFavorites.sync(player);
         PlayerIdentity.sync(player);
