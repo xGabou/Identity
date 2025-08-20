@@ -151,8 +151,7 @@ public class AbilityUtils {
         }
     }
     /**
-     * Finds the first JukeboxBlockEntity near the origin using a 3.46-block Euclidean radius,
-     * matching the behavior used in Alex's Mobs.
+     * Finds the first JukeboxBlockEntity near the origin using a 3.46-block Euclidean radius.
      *
      * @param world  The world to search in
      * @param origin The central position (e.g., player or mob)
