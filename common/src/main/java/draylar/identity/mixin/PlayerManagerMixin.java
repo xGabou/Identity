@@ -32,7 +32,8 @@ public class PlayerManagerMixin {
             method = "respawnPlayer",
             at = @At("RETURN")
     )
-    private void onRespawn(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir) {
+    private void onRespawn(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir) {
+        ServerPlayerEntity player = cir.getReturnValue();
         LivingEntity identity = PlayerIdentity.getIdentity(player);
 
         // refresh entity hitbox dimensions after death
