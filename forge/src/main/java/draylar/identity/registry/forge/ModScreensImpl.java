@@ -1,4 +1,4 @@
-package draylar.identity.forge.registry;
+package draylar.identity.registry.forge;
 
 import draylar.identity.forge.config.IdentityForgeConfigScreen;
 import net.minecraft.client.gui.screen.Screen;
