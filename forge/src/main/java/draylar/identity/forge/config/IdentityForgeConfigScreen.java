@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import draylar.identity.forge.IdentityForge;
+import draylar.identity.forge.config.ConfigLoader;
+import draylar.identity.forge.config.IdentityForgeConfig;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
