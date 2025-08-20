@@ -8,8 +8,10 @@ import draylar.identity.forge.ability.AlexsMobsAbilityRegistry;
 import draylar.identity.forge.config.ConfigLoader;
 import draylar.identity.forge.config.ForgeConfigReloader;
 import draylar.identity.forge.config.IdentityForgeConfig;
+import draylar.identity.forge.config.IdentityForgeConfigScreen;
 import draylar.identity.util.IdentityCompatUtils;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.client.ConfigGuiHandler;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -33,7 +35,9 @@ public class IdentityForge {
 //        if (ModList.get().isLoaded("bjornlib")) {
 //            ForgeLivingEntityCompatProvider.init(); // qui utilise Bjorn
 //        }
-        if(Platform.getEnv().isClient()) {
+        if (Platform.getEnv().isClient()) {
+            ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class,
+                    () -> new ConfigGuiHandler.ConfigGuiFactory((mc, screen) -> new IdentityForgeConfigScreen(screen)));
             new IdentityForgeClient();
         }
     }
