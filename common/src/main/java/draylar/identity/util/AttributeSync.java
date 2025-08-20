@@ -18,7 +18,7 @@ public class AttributeSync {
                 player.getId(),
                 List.of(player.getAttributes().getCustomInstance(EntityAttributes.GENERIC_MAX_HEALTH))
         );
-
+        player.networkHandler.sendPacket(packet);
         ((ServerWorld) player.getWorld()).getChunkManager().sendToNearbyPlayers(player, packet);
     }
 }
