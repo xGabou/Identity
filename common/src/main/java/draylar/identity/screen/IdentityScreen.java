@@ -87,6 +87,7 @@ public class IdentityScreen extends Screen {
                 LivingEntity e = (LivingEntity) type.create(client.world);
                 renderEntities.put(type, e);
             } catch (Exception e) {
+                IdentityCompatUtils.markIncompatibleEntityType(type.getEntityType());
                 Identity.LOGGER.warn("Failed to create identity " + type.getEntityType().getTranslationKey(), e);
             }
         }
@@ -281,6 +282,7 @@ public class IdentityScreen extends Screen {
                     LivingEntity e = (LivingEntity) type.create(client.world);
                     renderEntities.put(type, e);
                 } catch (Exception e) {
+                    IdentityCompatUtils.markIncompatibleEntityType(type.getEntityType());
                     Identity.LOGGER.warn("Failed to create identity " + type.getEntityType().getTranslationKey(), e);
                 }
             }
