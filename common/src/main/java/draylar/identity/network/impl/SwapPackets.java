@@ -1,11 +1,13 @@
 package draylar.identity.network.impl;
 
 import dev.architectury.networking.NetworkManager;
+import draylar.identity.Identity;
 import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.network.ClientNetworking;
 import draylar.identity.network.NetworkHandler;
+import draylar.identity.util.IdentityCompatUtils;
 import io.netty.buffer.Unpooled;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -29,13 +31,19 @@ public class SwapPackets {
                         context.getPlayer().hasPermissionLevel(3) ||
                         IdentityConfig.getInstance().allowedSwappers().stream()
                             .anyMatch(p -> p.equalsIgnoreCase(context.getPlayer().getGameProfile().getName()))) {
-                        // player type shouldn't be sent, but we still check regardless
-                        if(entityType.equals(EntityType.PLAYER)) {
+                        if(IdentityCompatUtils.isBlacklistedEntityType(entityType)) {
+                            PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), null, null);
+                        } else if(entityType.equals(EntityType.PLAYER)) {
                             PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), null, null);
                         } else {
                             @Nullable IdentityType<LivingEntity> type = IdentityType.from(entityType, variant);
                             if(type != null) {
-                                PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), type, type.create(context.getPlayer().getWorld()));
+                                try {
+                                    PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), type, type.create(context.getPlayer().getWorld()));
+                                } catch (Exception e) {
+                                    IdentityCompatUtils.markIncompatibleEntityType(entityType);
+                                    Identity.LOGGER.warn("Failed to create identity " + entityType.getTranslationKey(), e);
+                                }
                             }
                         }
 
