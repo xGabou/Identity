@@ -77,22 +77,7 @@ public class IdentityScreen extends Screen {
         }
 
         // preload entities
-        for (IdentityType<?> type : IdentityType.getAllTypes(client.world)) {
-            // Check by type before instantiating
-            if (IdentityCompatUtils.isBlacklistedEntityType(type.getEntityType())) {
-                continue;
-            }
-
-            try {
-                LivingEntity e = (LivingEntity) type.create(client.world);
-                renderEntities.put(type, e);
-            } catch (Exception e) {
-                IdentityCompatUtils.markIncompatibleEntityType(type.getEntityType());
-                Identity.LOGGER.warn("Failed to create identity " + type.getEntityType().getTranslationKey(), e);
-            }
-        }
-
-
+        loadEntities(client);
 
 
         // filter + sort unlocked
@@ -119,6 +104,23 @@ public class IdentityScreen extends Screen {
                 scrollY    = 0;
             }
         });
+    }
+
+    private void loadEntities(MinecraftClient client) {
+        for (IdentityType<?> type : IdentityType.getAllTypes(client.world)) {
+            // Check by type before instantiating
+            if (IdentityCompatUtils.isBlacklistedEntityType(type.getEntityType())) {
+                continue;
+            }
+
+            try {
+                LivingEntity e = (LivingEntity) type.create(client.world);
+                renderEntities.put(type, e);
+            } catch (Exception e) {
+                IdentityCompatUtils.markIncompatibleEntityType(type.getEntityType());
+                Identity.LOGGER.warn("Failed to create identity " + type.getEntityType().getTranslationKey(), e);
+            }
+        }
     }
 
     private void populateEntities(ClientPlayerEntity player, List<IdentityType<?>> list) {
@@ -274,18 +276,7 @@ public class IdentityScreen extends Screen {
         if (player != null) {
             // FULL FIX HERE:
             renderEntities.clear(); // 🔥 Clear old render entities!
-            for (IdentityType<?> type : IdentityType.getAllTypes(client.world)) {
-                if (IdentityCompatUtils.isBlacklistedEntityType(type.getEntityType())) {
-                    continue;
-                }
-                try {
-                    LivingEntity e = (LivingEntity) type.create(client.world);
-                    renderEntities.put(type, e);
-                } catch (Exception e) {
-                    IdentityCompatUtils.markIncompatibleEntityType(type.getEntityType());
-                    Identity.LOGGER.warn("Failed to create identity " + type.getEntityType().getTranslationKey(), e);
-                }
-            }
+            loadEntities(client);
 
             unlocked.clear();
             unlocked.addAll(renderEntities.keySet().stream()
