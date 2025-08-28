@@ -13,4 +13,7 @@ public interface NetworkHandler {
     Identifier ABILITY_SYNC = Identity.id("ability_sync");
     Identifier CONFIG_SYNC = Identity.id("config_sync");
     Identifier UNLOCK_SYNC = Identity.id("unlock_sync");
+    Identifier OPEN_PROFESSION_SCREEN = Identity.id("open_profession_screen");
+    Identifier SET_PROFESSION = Identity.id("set_profession");
+    Identifier START_TRADE = Identity.id("start_trade");
 }

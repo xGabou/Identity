@@ -7,6 +7,7 @@ import draylar.identity.impl.DimensionsRefresher;
 import draylar.identity.impl.PlayerDataProvider;
 import draylar.identity.network.impl.FavoritePackets;
 import draylar.identity.network.impl.UnlockPackets;
+import draylar.identity.network.impl.VillagerProfessionPackets;
 import io.netty.buffer.Unpooled;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -26,6 +27,7 @@ public class ClientNetworking implements NetworkHandler {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.ABILITY_SYNC, ClientNetworking::handleAbilitySyncPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.UNLOCK_SYNC, UnlockPackets::handleUnlockSyncPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.CONFIG_SYNC, ClientNetworking::handleConfigurationSyncPacket);
+        VillagerProfessionPackets.registerClientHandler();
     }
 
     public static void runOrQueue(NetworkManager.PacketContext context, ApplicablePacket packet) {

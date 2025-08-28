@@ -30,6 +30,7 @@ public class AbilityRegistry {
         register(EntityType.WITCH, new WitchAbility());
         register(EntityType.EVOKER, new EvokerAbility());
         register(EntityType.WARDEN, new WardenAbility());
+        register(EntityType.VILLAGER, new VillagerProfessionAbility());
     }
 
     public static IdentityAbility get(EntityType<?> type) {

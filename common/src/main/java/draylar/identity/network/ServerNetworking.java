@@ -6,6 +6,8 @@ import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.PlayerAbilities;
 import draylar.identity.network.impl.FavoritePackets;
 import draylar.identity.network.impl.SwapPackets;
+import draylar.identity.network.impl.VillagerProfessionPackets;
+import draylar.identity.network.impl.VillagerTradePackets;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -17,6 +19,8 @@ public class ServerNetworking implements NetworkHandler {
         FavoritePackets.registerFavoriteRequestHandler();
         SwapPackets.registerIdentityRequestPacketHandler();
         SwapPackets.registerIdentityRequestPacketHandler();
+        VillagerProfessionPackets.registerServerHandler();
+        VillagerTradePackets.registerTradeRequestHandler();
     }
 
     public static void registerUseAbilityPacketHandler() {
