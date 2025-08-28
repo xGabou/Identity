@@ -6,14 +6,15 @@ import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
 import net.minecraft.world.poi.PointOfInterestType;
 import net.minecraft.world.poi.PointOfInterestTypes;
+import net.minecraft.village.VillagerProfession;
 
 import java.util.Optional;
 
@@ -32,9 +33,13 @@ public class VillagerProfessionAbility extends IdentityAbility<VillagerEntity> {
 
         BlockHitResult blockResult = (BlockHitResult) result;
         Optional<RegistryEntry<PointOfInterestType>> poi = PointOfInterestTypes.getTypeForState(world.getBlockState(blockResult.getBlockPos()));
-        if (poi.isPresent() && poi.get().getKey().isPresent()) {
-            Identifier professionId = poi.get().getKey().get().getValue();
-            VillagerProfessionPackets.openScreen((ServerPlayerEntity) player, professionId);
+        if (poi.isPresent()) {
+            for (RegistryEntry<VillagerProfession> profession : Registries.VILLAGER_PROFESSION.getEntries()) {
+                if (profession.value().acquirableJobSite().test(poi.get())) {
+                    VillagerProfessionPackets.openScreen((ServerPlayerEntity) player, profession.getKey().get().getValue());
+                    break;
+                }
+            }
         }
     }
 
