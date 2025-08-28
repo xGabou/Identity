@@ -31,6 +31,9 @@ public class AbilityRegistry {
         register(EntityType.EVOKER, new EvokerAbility());
         register(EntityType.WARDEN, new WardenAbility());
         register(EntityType.VILLAGER, new VillagerProfessionAbility());
+        register(EntityType.GUARDIAN, new GuardianAbility());
+        register(EntityType.ELDER_GUARDIAN, new GuardianAbility());
+
     }
 
     public static IdentityAbility get(EntityType<?> type) {
