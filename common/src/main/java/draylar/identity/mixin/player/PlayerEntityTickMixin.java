@@ -48,6 +48,9 @@ public abstract class PlayerEntityTickMixin extends LivingEntity {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
             PlayerAbilities.setCooldown(player, Math.max(0, data.getAbilityCooldown() - 1));
             PlayerAbilities.sync(player);
+
+            // Validate villager profession bindings periodically
+            draylar.identity.profession.ProfessionLifecycle.tickValidate(player, player.age);
         }
     }
 }

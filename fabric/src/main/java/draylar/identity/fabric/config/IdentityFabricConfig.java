@@ -78,6 +78,7 @@ public class IdentityFabricConfig extends IdentityConfig implements ConfigData {
 
     @Comment(value = "If set to false, only operators can switch identities. Used on the server; guaranteed to be authoritative.")
     public boolean enableSwaps = true;
+    public boolean allowSelfTrading = false;
 
     @Comment(value = "List of player names allowed to swap identities when swaps are disabled.")
     public List<String> allowedSwappers = new ArrayList<>();
@@ -334,6 +335,16 @@ public class IdentityFabricConfig extends IdentityConfig implements ConfigData {
     @Override
     public void setEnableSwaps(boolean enabled) {
         this.enableSwaps = enabled;
+    }
+
+    @Override
+    public boolean allowSelfTrading() {
+        return allowSelfTrading;
+    }
+
+    @Override
+    public void setAllowSelfTrading(boolean allow) {
+        this.allowSelfTrading = allow;
     }
 
     @Override

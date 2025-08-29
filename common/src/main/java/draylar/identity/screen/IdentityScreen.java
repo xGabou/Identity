@@ -121,6 +121,29 @@ public class IdentityScreen extends Screen {
                 Identity.LOGGER.warn("Failed to create identity " + type.getEntityType().getTranslationKey(), e);
             }
         }
+
+        // Append saved Villager identities as separate entries with unique variants
+        try {
+            if (client.player != null) {
+                draylar.identity.impl.PlayerDataProvider data = (draylar.identity.impl.PlayerDataProvider) client.player;
+                java.util.List<String> keys = new java.util.ArrayList<>(data.getVillagerIdentities().keySet());
+                java.util.Collections.sort(keys);
+                int i = 0;
+                for (String key : keys) {
+                    net.minecraft.nbt.NbtCompound tag = data.getVillagerIdentities().get(key);
+                    net.minecraft.nbt.NbtCompound copy = tag.copy();
+                    // Ensure id present for loadEntity
+                    copy.putString("id", net.minecraft.registry.Registries.ENTITY_TYPE.getId(net.minecraft.entity.EntityType.VILLAGER).toString());
+                    net.minecraft.entity.Entity loaded = net.minecraft.entity.EntityType.loadEntityWithPassengers(copy, client.world, it -> it);
+                    if (loaded instanceof net.minecraft.entity.LivingEntity living) {
+                        // Use a special variant domain to differentiate saved villager entries
+                        IdentityType<net.minecraft.entity.LivingEntity> idType = new IdentityType<>((net.minecraft.entity.EntityType<net.minecraft.entity.LivingEntity>) net.minecraft.entity.EntityType.VILLAGER, 1_000_000 + i);
+                        renderEntities.put(idType, living);
+                        i++;
+                    }
+                }
+            }
+        } catch (Throwable ignored) { }
     }
 
     private void populateEntities(ClientPlayerEntity player, List<IdentityType<?>> list) {

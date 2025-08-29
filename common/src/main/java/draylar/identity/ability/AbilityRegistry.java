@@ -40,7 +40,7 @@ public class AbilityRegistry {
         return abilities.get(type);
     }
 
-    public static <A extends LivingEntity, T extends EntityType<A>> void register(T type, IdentityAbility<A> ability) {
+    public static <A extends LivingEntity, T extends EntityType<A>> void register(T type, IdentityAbility<? super A> ability) {
         abilities.put(type, ability);
     }
 

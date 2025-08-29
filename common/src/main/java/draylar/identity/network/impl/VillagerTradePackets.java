@@ -28,7 +28,12 @@ public class VillagerTradePackets {
                 if (target != null) {
                     LivingEntity identity = PlayerIdentity.getIdentity(target);
                     if (identity instanceof VillagerEntity villager) {
-                        requester.openHandledScreen(villager);
+                        // Block self-trading unless enabled
+                        if (requester.getUuid().equals(target.getUuid()) && !draylar.identity.api.platform.IdentityConfig.getInstance().allowSelfTrading()) {
+                            return;
+                        }
+                        // Interact with the villager identity to open the trade screen
+                        villager.interactMob(requester, net.minecraft.util.Hand.MAIN_HAND);
                     }
                 }
             });
