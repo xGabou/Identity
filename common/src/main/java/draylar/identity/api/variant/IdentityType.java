@@ -77,7 +77,7 @@ public class IdentityType<T extends LivingEntity> {
 
     @Nullable
     public static IdentityType<?> from(NbtCompound compound) {
-        Identifier id = new Identifier(compound.getString("EntityID"));
+        Identifier id = Identifier.of(compound.getString("EntityID"));
         if(!Registries.ENTITY_TYPE.containsId(id)) {
             return null;
         }

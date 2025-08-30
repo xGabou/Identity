@@ -63,7 +63,7 @@ public class Identity {
     }
 
     public static Identifier id(String name) {
-        return new Identifier("identity", name);
+        return Identifier.of("identity", name);
     }
 
     public static boolean hasFlyingPermissions(ServerPlayerEntity player) {

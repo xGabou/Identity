@@ -30,13 +30,17 @@ public class AbilityRegistry {
         register(EntityType.WITCH, new WitchAbility());
         register(EntityType.EVOKER, new EvokerAbility());
         register(EntityType.WARDEN, new WardenAbility());
+        register(EntityType.VILLAGER, new VillagerProfessionAbility());
+        register(EntityType.GUARDIAN, new GuardianAbility());
+        register(EntityType.ELDER_GUARDIAN, new GuardianAbility());
+
     }
 
     public static IdentityAbility get(EntityType<?> type) {
         return abilities.get(type);
     }
 
-    public static <A extends LivingEntity, T extends EntityType<A>> void register(T type, IdentityAbility<A> ability) {
+    public static <A extends LivingEntity, T extends EntityType<A>> void register(T type, IdentityAbility<? super A> ability) {
         abilities.put(type, ability);
     }
 

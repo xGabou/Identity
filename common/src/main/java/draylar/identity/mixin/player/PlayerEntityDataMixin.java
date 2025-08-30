@@ -49,6 +49,7 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
     @Unique private int abilityCooldown = 0;
     @Unique private LivingEntity identity = null;
     @Unique private IdentityType<?> identityType = null;
+    @Unique private final Map<String, NbtCompound> villagerIdentities = new HashMap<>();
 
     private PlayerEntityDataMixin(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);
@@ -114,6 +115,13 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
 
         // Current Identity
         readCurrentIdentity(tag.getCompound("CurrentIdentity"));
+
+        // Villager Identities
+        villagerIdentities.clear();
+        NbtCompound villagerTag = tag.getCompound("VillagerIdentities");
+        for(String key : villagerTag.getKeys()) {
+            villagerIdentities.put(key, villagerTag.getCompound(key));
+        }
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("RETURN"))
@@ -142,6 +150,11 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
 
         // Current Identity
         tag.put("CurrentIdentity", writeCurrentIdentity(new NbtCompound()));
+
+        // Villager Identities
+        NbtCompound villagerTag = new NbtCompound();
+        villagerIdentities.forEach((key, value) -> villagerTag.put(key, value.copy()));
+        tag.put("VillagerIdentities", villagerTag);
     }
 
     @Unique
@@ -250,6 +263,30 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         return identityType;
     }
 
+    @Override
+    public void setIdentityType(@Nullable IdentityType<?> type) {
+        identityType = type;
+    }
+
+    @Override
+    public Map<String, NbtCompound> getVillagerIdentities() {
+        return villagerIdentities;
+    }
+
+    @Override
+    public void setVillagerIdentity(String key, NbtCompound identity) {
+        if(identity == null) {
+            villagerIdentities.remove(key);
+        } else {
+            villagerIdentities.put(key, identity);
+        }
+    }
+
+    @Override
+    public void removeVillagerIdentity(String key) {
+        villagerIdentities.remove(key);
+    }
+
     @Unique
     @Override
     public void setIdentity(LivingEntity identity) {
@@ -304,7 +341,7 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
                 player.stopRiding();
             }
             else if( !(identity.getType().isIn(IdentityEntityTags.RAVAGER_RIDING)) || SafeTagManager.isCustomRavagerRiding(identity.getType()))
-            player.stopRiding();
+                player.stopRiding();
         }
 
         // sync with client

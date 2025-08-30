@@ -17,10 +17,8 @@ public class PlayerAdvancementTrackerMixin {
 
     @Shadow private ServerPlayerEntity owner;
 
-    @Inject(
-            method = "grantCriterion",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/advancement/AdvancementRewards;apply(Lnet/minecraft/server/network/ServerPlayerEntity;)V")
-    )
+    // Run after the criterion is granted to avoid brittle INVOKE targets across versions
+    @Inject(method = "grantCriterion", at = @At("RETURN"))
     private void refreshFlight(Advancement advancement, String criterionName, CallbackInfoReturnable<Boolean> cir) {
         if(Identity.hasFlyingPermissions(owner)) {
             FlightHelper.grantFlightTo(owner);

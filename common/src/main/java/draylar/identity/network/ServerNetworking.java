@@ -17,6 +17,8 @@ public class ServerNetworking implements NetworkHandler {
         FavoritePackets.registerFavoriteRequestHandler();
         SwapPackets.registerIdentityRequestPacketHandler();
         SwapPackets.registerIdentityRequestPacketHandler();
+        VillagerProfessionPackets.registerServerHandler();
+        VillagerTradePackets.registerTradeRequestHandler();
     }
 
     public static void registerUseAbilityPacketHandler() {

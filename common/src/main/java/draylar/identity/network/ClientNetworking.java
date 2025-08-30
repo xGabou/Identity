@@ -26,6 +26,7 @@ public class ClientNetworking implements NetworkHandler {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.ABILITY_SYNC, ClientNetworking::handleAbilitySyncPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.UNLOCK_SYNC, UnlockPackets::handleUnlockSyncPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.CONFIG_SYNC, ClientNetworking::handleConfigurationSyncPacket);
+        VillagerProfessionPackets.registerClientHandler();
     }
 
     public static void runOrQueue(NetworkManager.PacketContext context, ApplicablePacket packet) {

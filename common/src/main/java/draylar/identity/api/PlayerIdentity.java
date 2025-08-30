@@ -15,6 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 public class PlayerIdentity {
 
@@ -31,6 +32,18 @@ public class PlayerIdentity {
 
     public static IdentityType<?> getIdentityType(PlayerEntity player) {
         return ((PlayerDataProvider) player).getIdentityType();
+    }
+
+    public static Map<String, NbtCompound> getVillagerIdentities(PlayerEntity player) {
+        return ((PlayerDataProvider) player).getVillagerIdentities();
+    }
+
+    public static void setVillagerIdentity(PlayerEntity player, String key, NbtCompound identity) {
+        ((PlayerDataProvider) player).setVillagerIdentity(key, identity);
+    }
+
+    public static void removeVillagerIdentity(PlayerEntity player, String key) {
+        ((PlayerDataProvider) player).removeVillagerIdentity(key);
     }
 
     /**

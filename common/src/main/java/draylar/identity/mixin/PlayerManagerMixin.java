@@ -19,11 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(PlayerManager.class)
 public class PlayerManagerMixin {
 
-    @Inject(at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;sendPacket(Lnet/minecraft/network/packet/Packet;)V",
-            ordinal = 0
-    ), method = "onPlayerConnect")
+    // Fire the join callback when a player connects; injecting at HEAD is more stable across versions
+    @Inject(method = "onPlayerConnect", at = @At("HEAD"))
     private void connect(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) {
         PlayerJoinCallback.EVENT.invoker().onPlayerJoin(player);
     }

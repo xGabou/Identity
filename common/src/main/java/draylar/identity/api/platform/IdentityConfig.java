@@ -82,6 +82,12 @@ public abstract class IdentityConfig {
      */
     public abstract void setEnableSwaps(boolean enabled);
 
+    // Whether players can trade with themselves when morphed as a villager
+    public abstract boolean allowSelfTrading();
+
+    // Toggle self-trading rule at runtime (e.g., via command)
+    public abstract void setAllowSelfTrading(boolean allow);
+
     /**
      * Players listed here may swap identities even when {@link #enableSwaps()} is false.
      * Names are compared case-insensitively.

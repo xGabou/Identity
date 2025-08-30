@@ -20,9 +20,8 @@ public abstract class PlayerEntityAttackMixin extends LivingEntity {
         super(entityType, world);
     }
 
-    @Inject(
-            method = "attack",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;handleAttack(Lnet/minecraft/entity/Entity;)Z"), cancellable = true)
+    // Inject early to avoid relying on internal callsites that can change across versions
+    @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     private void identityAttack(Entity target, CallbackInfo ci) {
         LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
 

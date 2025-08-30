@@ -27,5 +27,9 @@
   "identity.help.return": "Press any key to return to the Identity menu.",
   "key.categories.identity": "Identity",
   "key.identity": "Open Identity Menu",
-  "key.identity_ability": "Use an Identity Ability"
+  "key.identity_ability": "Use an Identity Ability",
+  "identity.profession.title": "Villager Profession",
+  "identity.profession.confirm": "Confirm",
+  "identity.profession.reset": "Reset",
+  "identity.profession.duplicate": "You already have this profession"
 }
