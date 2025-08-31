@@ -5,6 +5,7 @@ import draylar.identity.api.IdentityTickHandlers;
 import draylar.identity.api.PlayerAbilities;
 import draylar.identity.api.PlayerIdentity;
 import draylar.identity.impl.PlayerDataProvider;
+import draylar.identity.profession.ProfessionLifecycle;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -48,6 +49,8 @@ public abstract class PlayerEntityTickMixin extends LivingEntity {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
             PlayerAbilities.setCooldown(player, Math.max(0, data.getAbilityCooldown() - 1));
             PlayerAbilities.sync(player);
+
+            ProfessionLifecycle.tickValidate(player, player.age);
         }
     }
 }

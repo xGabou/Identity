@@ -1,6 +1,8 @@
 package draylar.identity.api.variant;
 
+import draylar.identity.Identity;
 import draylar.identity.impl.variant.*;
+import draylar.identity.util.IdentityCompatUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -88,22 +90,38 @@ public class IdentityType<T extends LivingEntity> {
     public static List<IdentityType<?>> getAllTypes(World world) {
         if(LIVING_TYPE_CASH.isEmpty()) {
             for (EntityType<?> type : Registries.ENTITY_TYPE) {
-                Entity instance = type.create(world);
-                if(instance instanceof LivingEntity) {
-                    LIVING_TYPE_CASH.add((EntityType<? extends LivingEntity>) type);
+
+                // Skip if already blacklisted
+                if (IdentityCompatUtils.isBlacklistedEntityType(type)) {
+                    continue;
+                }
+
+                try {
+                    // Try to create an instance once for compatibility check
+                    Entity instance = type.create(world);
+
+                    if (instance instanceof LivingEntity) {
+                        // Cache only if safe
+                        LIVING_TYPE_CASH.add((EntityType<? extends LivingEntity>) type);
+                    }
+
+                } catch (Throwable t) {
+                    // Mark incompatible so future checks skip instantly
+                    IdentityCompatUtils.markIncompatibleEntityType(type);
+                    Identity.LOGGER.warn("Skipping incompatible identity type {} during cache.", type, t);
                 }
             }
         }
 
         List<IdentityType<?>> types = new ArrayList<>();
-        for (EntityType<?> type : LIVING_TYPE_CASH) {
-            if(VARIANT_BY_TYPE.containsKey(type)) {
+        for (EntityType<? extends LivingEntity> type : LIVING_TYPE_CASH) {
+            if (VARIANT_BY_TYPE.containsKey(type)) {
                 TypeProvider<?> variant = VARIANT_BY_TYPE.get(type);
                 for (int i = 0; i <= variant.getRange(); i++) {
-                    types.add(new IdentityType(type, i));
+                    types.add(new IdentityType<>((EntityType<LivingEntity>) type, i));
                 }
             } else {
-                types.add(new IdentityType(type));
+                types.add(new IdentityType<>((EntityType<LivingEntity>) type));
             }
         }
 

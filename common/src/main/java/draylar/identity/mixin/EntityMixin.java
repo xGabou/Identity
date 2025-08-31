@@ -4,7 +4,9 @@ import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.SafeTagManager;
 import draylar.identity.impl.DimensionsRefresher;
 import net.minecraft.entity.*;
+import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -12,6 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
@@ -123,5 +126,15 @@ public abstract class EntityMixin implements DimensionsRefresher {
             }
         }
     }
+    @Inject(method = "onStruckByLightning", at = @At("TAIL"))
+    private void identity$onStruckByLightning(ServerWorld world, LightningEntity lightning, CallbackInfo ci) {
+        if ((Object) this instanceof PlayerEntity player) {
+            LivingEntity identity = PlayerIdentity.getIdentity(player);
+            if (identity instanceof CreeperEntity creeper) {
+                creeper.onStruckByLightning(world, lightning);
+            }
+        }
+    }
+
 
 }

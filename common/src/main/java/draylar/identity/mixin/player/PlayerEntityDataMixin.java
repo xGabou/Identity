@@ -7,11 +7,11 @@ import draylar.identity.api.SafeTagManager;
 import draylar.identity.api.event.IdentitySwapCallback;
 import draylar.identity.api.FlightHelper;
 import draylar.identity.api.platform.IdentityConfig;
+import draylar.identity.mixin.ServerChunkLoadingManagerAccessor;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.impl.DimensionsRefresher;
 import draylar.identity.impl.PlayerDataProvider;
 import draylar.identity.mixin.EntityTrackerAccessor;
-import draylar.identity.mixin.ThreadedAnvilChunkStorageAccessor;
 import draylar.identity.registry.IdentityEntityTags;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.entity.EntityType;
@@ -24,6 +24,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
@@ -63,7 +64,7 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         // Each entry will be a string with an entity registry ID value.
         NbtList unlockedIdList = tag.getList("UnlockedMorphs", NbtElement.STRING_TYPE);
         unlockedIdList.forEach(entityRegistryID -> {
-            Identifier id = new Identifier(entityRegistryID.asString());
+            Identifier id = Identifier.of(entityRegistryID.asString());
             if(Registries.ENTITY_TYPE.containsId(id)) {
                 EntityType<?> type = Registries.ENTITY_TYPE.get(id);
 
@@ -91,7 +92,7 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         favorites.clear();
         NbtList favoriteIdList = tag.getList("FavoriteIdentities", NbtElement.STRING_TYPE);
         favoriteIdList.forEach(registryID -> {
-            Identifier id = new Identifier(registryID.asString());
+            Identifier id = Identifier.of(registryID.asString());
             if(Registries.ENTITY_TYPE.containsId(id)) {
                 EntityType<?> type = Registries.ENTITY_TYPE.get(id);
                 favorites.add(new IdentityType(type));
@@ -348,7 +349,7 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         if(!player.getWorld().isClient) {
             PlayerIdentity.sync((ServerPlayerEntity) player);
 
-            Int2ObjectMap<Object> trackers = ((ThreadedAnvilChunkStorageAccessor) ((ServerWorld) player.getWorld()).getChunkManager().threadedAnvilChunkStorage).getEntityTrackers();
+            Int2ObjectMap<Object> trackers = ((ServerChunkLoadingManagerAccessor) ((ServerWorld) player.getWorld()).getChunkManager().chunkLoadingManager).getEntityTrackers();
             Object tracking = trackers.get(player.getId());
             ((EntityTrackerAccessor) tracking).getListeners().forEach(listener -> {
                 PlayerIdentity.sync((ServerPlayerEntity) player, listener.getPlayer());

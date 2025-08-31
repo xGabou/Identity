@@ -103,7 +103,7 @@ public class IdentityScreen extends Screen {
         populateEntities(player, unlocked);
 
         searchBar.setChangedListener(text -> {
-            focusOn(searchBar);
+            setFocused(searchBar);
             if (!lastSearch.equals(text)) {
                 ((ScreenAccessor) this).getSelectables().removeIf(w -> w instanceof EntityWidget);
                 children().removeIf(w -> w instanceof EntityWidget);
@@ -172,7 +172,7 @@ public class IdentityScreen extends Screen {
 
     @Override
     public void render(DrawContext ctx, int mx, int my, float delta) {
-        renderBackground(ctx);
+        renderBackground(ctx, mx, my, delta);
         renderEntityGrid(ctx, mx, my, delta);
 
         if (unlocked.isEmpty()) {
@@ -247,21 +247,21 @@ public class IdentityScreen extends Screen {
 
 
     @Override
-    public boolean mouseScrolled(double mx, double my, double amount) {
+    public boolean mouseScrolled(double mx, double my, double horiz, double vert) {
         if (entityWidgets.isEmpty()) return false;
 
         int rowH   = entityWidgets.get(0).getHeight();
         int rows   = (int)Math.ceil(unlocked.size() / 7f);
         int totalH = rows * rowH;
         int viewH  = this.height - getHeaderHeight();
-        // allow 10px of “empty” space at the bottom
         int bottomPadding = 10;
         int maxY = Math.max(0, totalH - viewH + bottomPadding);
 
-
-        scrollY = Math.max(0, Math.min(scrollY - (int)(amount * rowH), maxY));
+        // use vertical scroll
+        scrollY = Math.max(0, Math.min(scrollY - (int)(vert * rowH), maxY));
         return true;
     }
+
     @Override
     public void resize(MinecraftClient client, int width, int height) {
         super.resize(client, width, height);

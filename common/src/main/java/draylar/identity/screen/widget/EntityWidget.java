@@ -80,7 +80,7 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
 
 
     @Override
-    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(DrawContext ctx, int mouseX, int mouseY, float delta) {
         // 1) transparent background, no super.render()
 
         // 2) clamp GUI‑scale to [1..5], default Auto→3
@@ -107,12 +107,14 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         try {
             InventoryScreen.drawEntity(
                     ctx,
-                    slotCX,
-                    bottomY,
+                    slotCX, bottomY - size,    // top-left (x1,y1)
+                    slotCX + size, bottomY,    // bottom-right (x2,y2)
                     size,
-                    -10, -10,
+                    0.0F,                      // rotation angle (use 0F if not needed)
+                    -10, -10,                  // mouseX, mouseY
                     entity
             );
+
         } catch (Exception e) {
             Identity.LOGGER.warn("Failed to render " + type.getEntityType().getTranslationKey(), e);
         }
@@ -134,9 +136,7 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
     }
 
 
-    // completely suppress the default pressable background:
-    @Override
-    protected void renderButton(DrawContext ctx, int mouseX, int mouseY, float delta) { }
+    // default button background is suppressed by not calling super.renderWidget
 
     @Override
     public void onPress() { /* no-op */ }

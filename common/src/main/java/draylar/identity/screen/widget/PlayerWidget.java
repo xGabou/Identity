@@ -18,7 +18,7 @@ public class PlayerWidget extends PressableWidget {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
 //        float x = MouseUtilities.mouseX;
 //        float y = MouseUtilities.mouseY;
 //
@@ -30,14 +30,9 @@ public class PlayerWidget extends PressableWidget {
 //
 
         context.drawTexture(Identity.id("textures/gui/player.png"), getX(), getY(), 16, 16, 0, 0, 8, 8, 8, 8);
-
-        super.render(context, mouseX, mouseY, delta);
     }
 
-    @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-
-    }
+    // default button background suppressed by not calling super.renderWidget
 
     @Override
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {

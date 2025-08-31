@@ -4,6 +4,7 @@ import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.event.PlayerJoinCallback;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.impl.DimensionsRefresher;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.network.ClientConnection;
@@ -29,20 +30,21 @@ public class PlayerManagerMixin {
             method = "respawnPlayer",
             at = @At("RETURN")
     )
-    private void onRespawn(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir) {
-        LivingEntity identity = PlayerIdentity.getIdentity(player);
+    private void onRespawn(ServerPlayerEntity player, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayerEntity> cir) {
+        ServerPlayerEntity newPlayer = cir.getReturnValue();
+        LivingEntity identity = PlayerIdentity.getIdentity(newPlayer);
 
         // refresh entity hitbox dimensions after death
-        ((DimensionsRefresher) player).identity_refreshDimensions();
+        ((DimensionsRefresher) newPlayer).identity_refreshDimensions();
 
         // Re-sync max health for identity
         if(identity != null && IdentityConfig.getInstance().scalingHealth()) {
             float prevMax = player.getMaxHealth();
-            float ratio = prevMax <= 0 ? 1.0F : player.getHealth() / prevMax;
+            float ratio = prevMax <= 0 ? 1.0F : newPlayer.getHealth() / prevMax;
             float newMax = Math.min(IdentityConfig.getInstance().maxHealth(), identity.getMaxHealth());
-            player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(newMax);
-            player.setHealth(Math.max(1.0F, ratio * newMax));
-            player.networkHandler.sendPacket(new EntityAttributesS2CPacket(player.getId(), player.getAttributes().getAttributesToSend()));
+            newPlayer.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(newMax);
+            newPlayer.setHealth(Math.max(1.0F, ratio * newMax));
+            newPlayer.networkHandler.sendPacket(new EntityAttributesS2CPacket(newPlayer.getId(), newPlayer.getAttributes().getAttributesToSend()));
         }
     }
 }

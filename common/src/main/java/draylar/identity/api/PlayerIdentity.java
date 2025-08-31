@@ -56,9 +56,10 @@ public class PlayerIdentity {
      */
     public static boolean updateIdentity(ServerPlayerEntity player, IdentityType<?> type, LivingEntity entity) {
         // Protect against broken dragons from DragonMounts with null breed
-        if(entity==null)
-            return ((PlayerDataProvider) player).updateIdentity(entity);
-
+        if(entity == null) {
+            ((PlayerDataProvider) player).setIdentityType(type);
+            return ((PlayerDataProvider) player).updateIdentity(null);
+        }
         if (entity.getClass().getName().equals("com.github.kay9.dragonmounts.dragon.TameableDragon")) {
             try {
                 Method getBreed = entity.getClass().getMethod("getBreed");
@@ -74,6 +75,7 @@ public class PlayerIdentity {
         }
 
         // Proceed as usual
+        ((PlayerDataProvider) player).setIdentityType(type);
         return ((PlayerDataProvider) player).updateIdentity(entity);
     }
 

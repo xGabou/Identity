@@ -27,6 +27,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+
 public class IdentityCommand {
 
     public static void register() {
@@ -245,6 +247,40 @@ public class IdentityCommand {
                                                 return 1;
                                             })))
                             .build();
+            LiteralCommandNode<ServerCommandSource> professionNode =
+            CommandManager.literal("identity_villager")
+                    .requires(src -> true)
+                    .then(CommandManager.literal("list")
+                            .executes(ctx -> {
+                                ServerPlayerEntity player = ctx.getSource().getPlayer();
+                                Map<String, NbtCompound> map = PlayerIdentity.getVillagerIdentities(player);
+                                if (map.isEmpty()) {
+                                    player.sendMessage(Text.literal("You have no saved villager professions."), false);
+                                    return 1;
+                                }
+                                player.sendMessage(Text.literal("Saved villager professions:"), false);
+                                map.forEach((name, tag) -> {
+                                    String prof = tag.getString("ProfessionId");
+                                    player.sendMessage(Text.literal("- " + name + " -> " + prof), false);
+                                });
+                                return 1;
+                            }))
+                    .then(CommandManager.literal("show")
+                                    .then(CommandManager.argument("name", StringArgumentType.string())
+                                            .executes(ctx -> {
+                                                ServerPlayerEntity player = ctx.getSource().getPlayer();
+                                                String name = StringArgumentType.getString(ctx, "name");
+                                                Map<String, NbtCompound> map = PlayerIdentity.getVillagerIdentities(player);
+                                                if (!map.containsKey(name)) {
+                                                    player.sendMessage(Text.literal("No villager saved under name: " + name), false);
+                                                    return 0;
+                                                }
+                                                NbtCompound tag = map.get(name);
+                                                String prof = tag.getString("ProfessionId");
+                                                player.sendMessage(Text.literal("Villager '" + name + "' profession: " + prof), false);
+                                                return 1;
+                                            })))
+                            .build();
 
             rootNode.addChild(grantNode);
             rootNode.addChild(revokeNode);
@@ -253,6 +289,7 @@ public class IdentityCommand {
             rootNode.addChild(test);
             rootNode.addChild(offsetNode);
             rootNode.addChild(whitelistNode);
+            rootNode.addChild(professionNode);
 
             dispatcher.getRoot().addChild(rootNode);
         });

@@ -43,7 +43,7 @@ public final class ProfessionLifecycle {
                 continue;
             }
 
-            ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, new Identifier(dim)));
+            ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, Identifier.of(dim)));
             if (world == null) {
                 clearAndNotify(player, tag, prof);
                 continue;
