@@ -18,6 +18,8 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.Window;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
@@ -137,7 +139,8 @@ public class IdentityScreen extends Screen {
                     net.minecraft.entity.Entity loaded = net.minecraft.entity.EntityType.loadEntityWithPassengers(copy, client.world, it -> it);
                     if (loaded instanceof net.minecraft.entity.LivingEntity living) {
                         // Use a special variant domain to differentiate saved villager entries
-                        IdentityType<net.minecraft.entity.LivingEntity> idType = new IdentityType<>((net.minecraft.entity.EntityType<net.minecraft.entity.LivingEntity>) net.minecraft.entity.EntityType.VILLAGER, 1_000_000 + i);
+                        IdentityType<VillagerEntity> idType =
+                                new IdentityType<>(EntityType.VILLAGER, 1_000_000 + i);
                         renderEntities.put(idType, living);
                         i++;
                     }
