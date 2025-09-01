@@ -1,13 +1,13 @@
 package draylar.identity.mixin;
 
 import draylar.identity.api.PlayerIdentity;
+import net.minecraft.component.type.FoodComponent;
+import net.minecraft.component.type.FoodComponents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.FoodComponent;
-import net.minecraft.item.FoodComponents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Lazy;
@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 @Mixin(LivingEntity.class)
@@ -34,17 +35,20 @@ public abstract class LivingEntityFoodMixin extends Entity {
 
     @Inject(
             method = "applyFoodEffects",
-            at = @At(value = "INVOKE", target = "Ljava/util/Iterator;hasNext()Z"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
-    private void removeFleshHungerForWolves(ItemStack stack, World world, LivingEntity targetEntity, CallbackInfo ci, Item item) {
-        if((LivingEntity) (Object) this instanceof PlayerEntity player) {
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void removeFleshHungerForWolves(FoodComponent component, CallbackInfo ci) {
+        if ((LivingEntity)(Object)this instanceof PlayerEntity player) {
             LivingEntity identity = PlayerIdentity.getIdentity(player);
 
-            // If this player is a Wolf and the item they are eating is an item wolves are immune to, cancel the method.
-            if(identity instanceof WolfEntity) {
-                if(WOLVES_IGNORE.get().contains(item.getFoodComponent())) {
+            // If this player is a Wolf and the food component is one they should ignore, cancel entirely
+            if (identity instanceof WolfEntity) {
+                if (WOLVES_IGNORE.get().contains(component)) {
                     ci.cancel();
                 }
             }
         }
     }
+
 }

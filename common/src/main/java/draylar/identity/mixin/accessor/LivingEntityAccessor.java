@@ -17,8 +17,8 @@ public interface LivingEntityAccessor extends LivingEntityCompatAccessor {
     @Accessor
     boolean isJumping();
 
-    @Invoker
-    float callGetActiveEyeHeight(EntityPose pose, EntityDimensions dimensions);
+//    @Invoker
+//    float callGetActiveEyeHeight(EntityPose pose, EntityDimensions dimensions);
 
     @Invoker
     void callTickActiveItemStack();
@@ -44,8 +44,8 @@ public interface LivingEntityAccessor extends LivingEntityCompatAccessor {
     @Invoker
     void callSetLivingFlag(int mask, boolean value);
 
-    @Invoker
-    float callGetEyeHeight(EntityPose pose, EntityDimensions dimensions);
+//    @Invoker
+//    float callGetEyeHeight(EntityPose pose, EntityDimensions dimensions);
 
     // 🔥 Add this to access getNextAirOnLand(int)
     @Invoker("getNextAirOnLand")

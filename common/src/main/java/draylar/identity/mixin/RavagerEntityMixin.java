@@ -14,8 +14,6 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(RavagerEntity.class)
 public abstract class RavagerEntityMixin extends LivingEntity {
 
-    @Shadow @Nullable public abstract LivingEntity getControllingPassenger();
-
     private RavagerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
     }

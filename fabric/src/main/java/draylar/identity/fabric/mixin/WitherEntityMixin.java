@@ -6,10 +6,12 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -23,32 +25,26 @@ public abstract class WitherEntityMixin extends HostileEntity {
         super(entityType, world);
     }
 
-    @Inject(
+    @ModifyVariable(
             method = "mobTick",
-            at = @At(value = "INVOKE", target = "Ljava/util/List;isEmpty()Z"),
-            locals = LocalCapture.CAPTURE_FAILHARD
+            at = @At(
+                    value = "INVOKE_ASSIGN",
+                    target = "Lnet/minecraft/world/World;getTargets(Ljava/lang/Class;Lnet/minecraft/entity/ai/TargetPredicate;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/util/math/Box;)Ljava/util/List;"
+            )
     )
-    private void removeInvalidPlayerTargets(CallbackInfo ci, int j, List<LivingEntity> list) {
-        List<LivingEntity> toRemove = new ArrayList<>();
-
-        list.forEach(entity -> {
-            if(entity instanceof PlayerEntity player) {
+    private List<LivingEntity> identity$filterTargets(List<LivingEntity> list) {
+        list.removeIf(entity -> {
+            if (entity instanceof PlayerEntity player) {
                 LivingEntity identity = PlayerIdentity.getIdentity(player);
-
-                // potentially ignore undead identity players
-                if(identity != null && identity.isUndead()) {
-                    if(this.getTarget() != null) {
-                        // if this wither's target is not equal to the current entity
-                        if(!this.getTarget().getUuid().equals(entity.getUuid())) {
-                            toRemove.add(entity);
-                        }
-                    } else {
-                        toRemove.add(entity);
-                    }
-                }
+                return identity != null && identity.getType().isIn(EntityTypeTags.UNDEAD);
             }
+            return false;
         });
-
-        list.removeAll(toRemove);
+        return list;
     }
+
+
+
+
 }
+

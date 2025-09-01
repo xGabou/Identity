@@ -26,6 +26,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -136,7 +137,7 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
 
 
             if (IdentityConfig.getInstance().showPlayerNametag() && (player != MinecraftClient.getInstance().player || IdentityConfig.getInstance().shouldRenderOwnNameTag())) {
-                renderLabelIfPresent(player, player.getDisplayName(), matrixStack, vertexConsumerProvider, light);
+                renderLabelIfPresent(player, player.getDisplayName(), matrixStack, vertexConsumerProvider, light,g);
             }
 
             // ⛔ Prevent vanilla render from running

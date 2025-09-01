@@ -5,6 +5,7 @@ import draylar.identity.Identity;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.impl.PlayerDataProvider;
 import draylar.identity.network.NetworkHandler;
+import draylar.identity.network.impl.Payload;
 import io.netty.buffer.Unpooled;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -86,19 +87,21 @@ public class PlayerIdentity {
     }
 
     public static void sync(ServerPlayerEntity changed, ServerPlayerEntity packetTarget) {
-        PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
         NbtCompound entityTag = new NbtCompound();
 
         // serialize current identity data to tag if it exists
         LivingEntity identity = getIdentity(changed);
-        if(identity != null) {
+        if (identity != null) {
             identity.writeNbt(entityTag);
         }
+        String typeId = identity == null
+                ? "minecraft:empty"
+                : Registries.ENTITY_TYPE.getId(identity.getType()).toString();
 
-        // put entity type ID under the key "id", or "minecraft:empty" if no identity is equipped (or the identity entity type is invalid)
-        packet.writeUuid(changed.getUuid());
-        packet.writeString(identity == null ? "minecraft:empty" : Registries.ENTITY_TYPE.getId(identity.getType()).toString());
-        packet.writeNbt(entityTag);
-        NetworkManager.sendToPlayer(packetTarget, NetworkHandler.IDENTITY_SYNC, packet);
+        Payload.IdentitySyncPayload payload =
+                new Payload.IdentitySyncPayload(changed.getUuid(), typeId, entityTag);
+
+        NetworkManager.sendToPlayer(packetTarget, payload);
     }
+
 }

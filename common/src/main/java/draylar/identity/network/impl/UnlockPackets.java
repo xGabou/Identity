@@ -11,34 +11,38 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import draylar.identity.network.impl.Payload.*;
 
 public class UnlockPackets {
 
     private static final String UNLOCK_KEY = "UnlockedIdentities";
 
-    public static void handleUnlockSyncPacket(PacketByteBuf packet, NetworkManager.PacketContext context) {
-        NbtCompound nbt = packet.readNbt();
-        if(nbt != null) {
-            NbtList list = nbt.getList(UNLOCK_KEY, NbtElement.COMPOUND_TYPE);
+    public static void registerClientHandler() {
+        NetworkManager.registerReceiver(
+                NetworkManager.Side.S2C,
+                UnlockSyncPayload.ID,
+                UnlockSyncPayload.CODEC,
+                (payload, context) -> {
+                    NbtCompound nbt = payload.data();
+                    if (nbt != null) {
+                        NbtList list = nbt.getList(UNLOCK_KEY, NbtElement.COMPOUND_TYPE);
 
-            ClientNetworking.runOrQueue(context, player -> {
-                ((PlayerDataProvider) player).getUnlocked().clear();
-                list.forEach(idTag -> ((PlayerDataProvider) player).getUnlocked().add(IdentityType.from((NbtCompound) idTag)));
-            });
-        }
+                        ClientNetworking.runOrQueue(context, player -> {
+                            PlayerDataProvider data = (PlayerDataProvider) player;
+                            data.getUnlocked().clear();
+                            list.forEach(idTag -> data.getUnlocked().add(IdentityType.from((NbtCompound) idTag)));
+                        });
+                    }
+                }
+        );
     }
 
     public static void sendSyncPacket(ServerPlayerEntity player) {
-        PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-
-        // Serialize unlocked to tag
         NbtCompound compound = new NbtCompound();
         NbtList idList = new NbtList();
         ((PlayerDataProvider) player).getUnlocked().forEach(type -> idList.add(type.writeCompound()));
         compound.put(UNLOCK_KEY, idList);
-        packet.writeNbt(compound);
 
-        // Send to client
-        NetworkManager.sendToPlayer(player, NetworkHandler.UNLOCK_SYNC, packet);
+        NetworkManager.sendToPlayer(player, new UnlockSyncPayload(compound));
     }
 }

@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import draylar.identity.api.variant.TypeProvider;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.CatEntity;
+import net.minecraft.entity.passive.CatVariant;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
@@ -30,15 +32,21 @@ public class CatTypeProvider extends TypeProvider<CatEntity> {
 
     @Override
     public int getVariantData(CatEntity entity) {
-        return Registries.CAT_VARIANT.getRawId(entity.getVariant());
+        // extraire la valeur CatVariant de l'entry
+        CatVariant variant = entity.getVariant().value();
+        return Registries.CAT_VARIANT.getRawId(variant);
     }
 
     @Override
     public CatEntity create(EntityType<CatEntity> type, World world, int data) {
         CatEntity cat = new CatEntity(type, world);
-        cat.setVariant(Registries.CAT_VARIANT.get(data));
+        // retransformer en RegistryEntry<CatVariant>
+        RegistryEntry<CatVariant> entry = Registries.CAT_VARIANT.getEntry(data)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid cat variant id: " + data));
+        cat.setVariant(entry);
         return cat;
     }
+
 
     @Override
     public int getFallbackData() {

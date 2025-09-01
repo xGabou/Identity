@@ -3,7 +3,7 @@ package draylar.identity.mixin;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
-import net.minecraft.client.render.entity.feature.StrayOverlayFeatureRenderer;
+import net.minecraft.client.render.entity.feature.SkeletonOverlayFeatureRenderer;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.SkeletonEntityModel;
@@ -18,10 +18,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(StrayOverlayFeatureRenderer.class)
+@Mixin(SkeletonOverlayFeatureRenderer.class)
 public abstract class StrayOverlayMixin<T extends MobEntity & RangedAttackMob, M extends EntityModel<T>> extends FeatureRenderer<T, M> {
 
-    @Shadow @Final private SkeletonEntityModel<StrayEntity> model;
+    @Shadow @Final private SkeletonEntityModel<T> model;
 
     public StrayOverlayMixin(FeatureRendererContext<T, M> context) {
         super(context);

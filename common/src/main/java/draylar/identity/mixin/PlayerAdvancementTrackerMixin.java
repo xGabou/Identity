@@ -4,6 +4,7 @@ import draylar.identity.Identity;
 import draylar.identity.api.FlightHelper;
 import draylar.identity.api.platform.IdentityConfig;
 import net.minecraft.advancement.Advancement;
+import net.minecraft.advancement.AdvancementEntry;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,7 +20,7 @@ public class PlayerAdvancementTrackerMixin {
 
     // Run after the criterion is granted to avoid brittle INVOKE targets across versions
     @Inject(method = "grantCriterion", at = @At("RETURN"))
-    private void refreshFlight(Advancement advancement, String criterionName, CallbackInfoReturnable<Boolean> cir) {
+    private void refreshFlight(AdvancementEntry advancement, String criterionName, CallbackInfoReturnable<Boolean> cir) {
         if(Identity.hasFlyingPermissions(owner)) {
             FlightHelper.grantFlightTo(owner);
             owner.getAbilities().setFlySpeed(IdentityConfig.getInstance().flySpeed());

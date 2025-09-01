@@ -11,14 +11,13 @@ import draylar.identity.api.variant.IdentityType;
 import draylar.identity.screen.widget.EntityWidget;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
-import net.minecraft.command.argument.RegistryEntryArgumentType;
-import net.minecraft.command.suggestion.SuggestionProviders;
+import net.minecraft.command.argument.IdentifierArgumentType;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -56,12 +55,12 @@ public class IdentityCommand {
                                         return 1;
                                     })
                             )
-                            .then(CommandManager.argument("identity", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENTITY_TYPE)).suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
+                            .then(CommandManager.argument("identity", IdentifierArgumentType.identifier())
                                     .executes(context -> {
                                         grant(
                                                 context.getSource().getPlayer(),
                                                 EntityArgumentType.getPlayer(context, "player"),
-                                                RegistryEntryArgumentType.getSummonableEntityType(context, "identity").registryKey().getValue(),
+                                                IdentifierArgumentType.getIdentifier(context, "identity"),
                                                 null
                                         );
                                         return 1;
@@ -73,7 +72,7 @@ public class IdentityCommand {
                                                 grant(
                                                         context.getSource().getPlayer(),
                                                         EntityArgumentType.getPlayer(context, "player"),
-                                                        RegistryEntryArgumentType.getSummonableEntityType(context, "identity").registryKey().getValue(),
+                                                        IdentifierArgumentType.getIdentifier(context, "identity"),
                                                         nbt
                                                 );
 
@@ -99,12 +98,12 @@ public class IdentityCommand {
                                         return 1;
                                     })
                             )
-                            .then(CommandManager.argument("identity", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENTITY_TYPE)).suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
+                            .then(CommandManager.argument("identity", IdentifierArgumentType.identifier())
                                     .executes(context -> {
                                         revoke(
                                                 context.getSource().getPlayer(),
                                                 EntityArgumentType.getPlayer(context, "player"),
-                                                RegistryEntryArgumentType.getSummonableEntityType(context, "identity").registryKey().getValue(),
+                                                IdentifierArgumentType.getIdentifier(context, "identity"),
                                                 null
                                         );
                                         return 1;
@@ -116,7 +115,7 @@ public class IdentityCommand {
                                                 revoke(
                                                         context.getSource().getPlayer(),
                                                         EntityArgumentType.getPlayer(context, "player"),
-                                                        RegistryEntryArgumentType.getSummonableEntityType(context, "identity").registryKey().getValue(),
+                                                        IdentifierArgumentType.getIdentifier(context, "identity"),
                                                         nbt
                                                 );
 
@@ -130,11 +129,11 @@ public class IdentityCommand {
             LiteralCommandNode<ServerCommandSource> equip = CommandManager
                     .literal("equip")
                     .then(CommandManager.argument("player", EntityArgumentType.players())
-                            .then(CommandManager.argument("identity", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENTITY_TYPE)).suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
+                            .then(CommandManager.argument("identity", IdentifierArgumentType.identifier())
                                     .executes(context -> {
                                         equip(context.getSource().getPlayer(),
                                                 EntityArgumentType.getPlayer(context, "player"),
-                                                RegistryEntryArgumentType.getSummonableEntityType(context, "identity").registryKey().getValue(),
+                                                IdentifierArgumentType.getIdentifier(context, "identity"),
                                                 null);
 
                                         return 1;
@@ -145,7 +144,7 @@ public class IdentityCommand {
 
                                                 equip(context.getSource().getPlayer(),
                                                         EntityArgumentType.getPlayer(context, "player"),
-                                                        RegistryEntryArgumentType.getSummonableEntityType(context, "identity").registryKey().getValue(),
+                                                        IdentifierArgumentType.getIdentifier(context, "identity"),
                                                         nbt);
 
                                                 return 1;
@@ -172,27 +171,27 @@ public class IdentityCommand {
                     .literal("test")
                     .then(CommandManager.argument("player", EntityArgumentType.player())
                             .then(CommandManager.literal("not")
-                                    .then(CommandManager.argument("identity", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENTITY_TYPE)).suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
+                                     .then(CommandManager.argument("identity", IdentifierArgumentType.identifier())
                                             .executes(context -> {
                                                 return testNot(
                                                         context.getSource().getPlayer(),
                                                         EntityArgumentType.getPlayer(context, "player"),
-                                                        RegistryEntryArgumentType.getSummonableEntityType(context, "identity").registryKey().getValue()
-                                                );
-                                            })
-                                    )
-                            )
-                            .then(CommandManager.argument("identity", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.ENTITY_TYPE)).suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
-                                    .executes(context -> {
-                                        return test(
-                                                context.getSource().getPlayer(),
-                                                EntityArgumentType.getPlayer(context, "player"),
-                                                RegistryEntryArgumentType.getSummonableEntityType(context, "identity").registryKey().getValue()
-                                        );
-                                    })
-                            )
-                    )
-                    .build();
+                                                         IdentifierArgumentType.getIdentifier(context, "identity")
+                                             );
+                                         })
+                                     )
+                             )
+                             .then(CommandManager.argument("identity", IdentifierArgumentType.identifier())
+                                     .executes(context -> {
+                                         return test(
+                                                 context.getSource().getPlayer(),
+                                                 EntityArgumentType.getPlayer(context, "player"),
+                                                 IdentifierArgumentType.getIdentifier(context, "identity")
+                                         );
+                                     })
+                             )
+                     )
+                     .build();
             LiteralCommandNode<ServerCommandSource> offsetNode =
                     CommandManager.literal("offset")
                             .then(CommandManager.argument("value", IntegerArgumentType.integer())
@@ -424,3 +423,4 @@ public class IdentityCommand {
         }
     }
 }
+

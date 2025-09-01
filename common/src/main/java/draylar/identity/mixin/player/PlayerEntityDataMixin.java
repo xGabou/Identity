@@ -23,8 +23,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
@@ -216,6 +216,13 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         this.unlocked.clear();
         this.unlocked.addAll(unlocked);
     }
+    @Unique
+    private boolean identityIsUndead = false;
+
+    @Unique
+    public boolean identity$isIdentityUndead() {
+        return identityIsUndead;
+    }
 
     @Unique
     @Override
@@ -307,6 +314,11 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
 
         // refresh entity hitbox dimensions
         ((DimensionsRefresher) player).identity_refreshDimensions();
+        if (identity != null) {
+            this.identityIsUndead = identity.getType().isIn(EntityTypeTags.UNDEAD);
+        } else {
+            this.identityIsUndead = false;
+        }
 
         // Identity is valid and scaling health is on; set entity's max health and current health to reflect identity.
         if (identity != null && IdentityConfig.getInstance().scalingHealth()) {

@@ -10,6 +10,7 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.s2c.play.EntityAttributesS2CPacket;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,7 +23,7 @@ public class PlayerManagerMixin {
 
     // Fire the join callback when a player connects; injecting at HEAD is more stable across versions
     @Inject(method = "onPlayerConnect", at = @At("HEAD"))
-    private void connect(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) {
+    private void connect(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci) {
         PlayerJoinCallback.EVENT.invoker().onPlayerJoin(player);
     }
 

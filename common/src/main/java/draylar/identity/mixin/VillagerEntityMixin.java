@@ -2,6 +2,7 @@ package draylar.identity.mixin;
 
 import draylar.identity.api.PlayerIdentity;
 import draylar.identity.impl.PlayerDataProvider;
+import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.registry.Registries;
@@ -31,7 +32,7 @@ public abstract class VillagerEntityMixin {
     private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         LivingEntity identity = PlayerIdentity.getIdentity(player);
 
-        if(identity != null && identity.isUndead()) {
+        if(identity != null && identity.getType() == EntityType.ZOMBIE_VILLAGER) {
             this.sayNo();
             cir.setReturnValue(ActionResult.SUCCESS);
         }

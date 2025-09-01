@@ -14,39 +14,42 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import draylar.identity.network.impl.Payload.*;
 
 import java.util.Set;
 
 public class FavoritePackets {
 
     public static void sendFavoriteRequest(IdentityType<?> type, boolean favorite) {
-        PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-        packet.writeIdentifier(Registries.ENTITY_TYPE.getId(type.getEntityType()));
-        packet.writeInt(type.getVariantData());
-        packet.writeBoolean(favorite);
-        NetworkManager.sendToServer(ClientNetworking.FAVORITE_UPDATE, packet);
+        Identifier entityId = Registries.ENTITY_TYPE.getId(type.getEntityType());
+        NetworkManager.sendToServer(new FavoriteUpdatePayload(entityId, type.getVariantData(), favorite));
     }
 
     public static void registerFavoriteRequestHandler() {
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, NetworkHandler.FAVORITE_UPDATE, (buf, context) -> {
-            EntityType<?> entityType = Registries.ENTITY_TYPE.get(buf.readIdentifier());
-            int variant = buf.readInt();
-            boolean favorite = buf.readBoolean();
-            ServerPlayerEntity player = (ServerPlayerEntity) context.getPlayer();
+        NetworkManager.registerReceiver(
+                NetworkManager.Side.C2S,
+                FavoriteUpdatePayload.ID,
+                FavoriteUpdatePayload.CODEC,
+                (payload, context) -> {
+                    EntityType<?> entityType = Registries.ENTITY_TYPE.get(payload.entityTypeId());
+                    int variant = payload.variant();
+                    boolean favorite = payload.favorite();
+                    ServerPlayerEntity player = (ServerPlayerEntity) context.getPlayer();
 
-            context.getPlayer().getServer().execute(() -> {
-                @Nullable IdentityType<?> type = IdentityType.from(entityType, variant);
-
-                if(type != null) {
-                    if(favorite) {
-                        PlayerFavorites.favorite(player, type);
-                    } else {
-                        PlayerFavorites.unfavorite(player, type);
-                    }
+                    context.queue(() -> {
+                        @Nullable IdentityType<?> type = IdentityType.from(entityType, variant);
+                        if (type != null) {
+                            if (favorite) {
+                                PlayerFavorites.favorite(player, type);
+                            } else {
+                                PlayerFavorites.unfavorite(player, type);
+                            }
+                        }
+                    });
                 }
-            });
-        });
+        );
     }
 
     public static void sendFavoriteSync(ServerPlayerEntity player) {
@@ -56,20 +59,23 @@ public class FavoritePackets {
         favorites.forEach(type -> idList.add(type.writeCompound()));
         tag.put("FavoriteIdentities", idList);
 
-        // Create & send packet with NBT
-        PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-        packet.writeNbt(tag);
-        NetworkManager.sendToPlayer(player, NetworkHandler.FAVORITE_SYNC, packet);
+        NetworkManager.sendToPlayer(player, new FavoriteSyncPayload(tag));
     }
 
-    public static void handleFavoriteSyncPacket(PacketByteBuf packet, NetworkManager.PacketContext context) {
-        NbtCompound tag = packet.readNbt();
-
-        ClientNetworking.runOrQueue(context, player -> {
-            PlayerDataProvider data = (PlayerDataProvider) player;
-            data.getFavorites().clear();
-            NbtList idList = tag.getList("FavoriteIdentities", NbtElement.COMPOUND_TYPE);
-            idList.forEach(compound -> data.getFavorites().add(IdentityType.from((NbtCompound) compound)));
-        });
+    public static void registerFavoriteSyncHandler() {
+        NetworkManager.registerReceiver(
+                NetworkManager.Side.S2C,
+                FavoriteSyncPayload.ID,
+                FavoriteSyncPayload.CODEC,
+                (payload, context) -> {
+                    NbtCompound tag = payload.data();
+                    ClientNetworking.runOrQueue(context, player -> {
+                        PlayerDataProvider data = (PlayerDataProvider) player;
+                        data.getFavorites().clear();
+                        NbtList idList = tag.getList("FavoriteIdentities", NbtElement.COMPOUND_TYPE);
+                        idList.forEach(compound -> data.getFavorites().add(IdentityType.from((NbtCompound) compound)));
+                    });
+                }
+        );
     }
 }

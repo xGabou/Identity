@@ -8,6 +8,7 @@ import draylar.identity.api.*;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.network.NetworkHandler;
 import draylar.identity.network.ServerNetworking;
+import draylar.identity.network.impl.Payload;
 import draylar.identity.registry.IdentityCommands;
 import draylar.identity.registry.IdentityEntityTags;
 import draylar.identity.registry.IdentityEventHandlers;
@@ -52,7 +53,12 @@ public class Identity {
             PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
             packet.writeBoolean(IdentityConfig.getInstance().enableClientSwapMenu());
             packet.writeBoolean(IdentityConfig.getInstance().showPlayerNametag());
-            NetworkManager.sendToPlayer(player, NetworkHandler.CONFIG_SYNC, packet);
+            NetworkManager.sendToPlayer(player,
+                    new Payload.ConfigSyncPayload(
+                            IdentityConfig.getInstance().enableClientSwapMenu(),
+                            IdentityConfig.getInstance().showPlayerNametag()
+                    )
+            );
 
             // Sync unlocked Identity
             PlayerUnlocks.sync(player);

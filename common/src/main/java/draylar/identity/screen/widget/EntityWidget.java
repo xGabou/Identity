@@ -1,12 +1,10 @@
 package draylar.identity.screen.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import draylar.identity.Identity;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.network.impl.FavoritePackets;
 import draylar.identity.network.impl.SwapPackets;
 import draylar.identity.screen.IdentityScreen;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
@@ -18,12 +16,12 @@ import net.minecraft.text.Text;
 public class EntityWidget<T extends LivingEntity> extends PressableWidget {
     public static int VERTICAL_OFFSET = 30;
     private static int BASE_Y_OFFSET = 10;
-    private  IdentityType<T> type;
-    private  T              entity;
-    private  int            size;
-    private       boolean        active;
-    private       boolean        starred;
-    private  IdentityScreen parent;
+    private IdentityType<T> type;
+    private T entity;
+    private int size;
+    private boolean active;
+    private boolean starred;
+    private IdentityScreen parent;
 
     public EntityWidget(
             int x, int y, int width, int height,
@@ -34,21 +32,17 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
             boolean current
     ) {
         super(x, y, width, height, Text.of(""));
-        this.type    = type;
-        this.entity  = entity;
-        this.parent  = parent;
+        this.type = type;
+        this.entity = entity;
+        this.parent = parent;
         this.starred = starred;
-        this.active  = current;
+        this.active = current;
 
-        // ---- new GUI‑scale–aware sizing ----
-        // baseSizeFactor ≃ 25 pixels “zoom” per block‑unit
-        float baseSizeFactor = (float)(25F / Math.max(entity.getWidth(), entity.getHeight()));
-        double scaleFactor   = parent.getScaleFactor();
-        int    guiScale      = parent.getGuiScale();
-        double finalScale    = scaleFactor / (guiScale == 0 ? 1 : guiScale);
-        this.size            = Math.max(1, (int)(baseSizeFactor * finalScale));
-        // ------------------------------------
-
+        // Stable per-entity render size in GUI pixels (independent of window/fullscreen scale)
+        float denom = Math.max(entity.getWidth(), entity.getHeight());
+        int base = (int) (30F / (denom <= 0.0001F ? 1.0F : denom));
+        this.size = Math.max(12, Math.min(base, 60));
+        entity.setCustomNameVisible(false);
         entity.setGlowing(true);
         setTooltip(Tooltip.of(type.createTooltipText(entity)));
     }
@@ -73,58 +67,35 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         }
         return super.mouseClicked(mx, my, button);
     }
-    // in EntityWidget<T>
+
     public Text getHoverName() {
         return type.createTooltipText(entity);
     }
 
-
     @Override
     protected void renderWidget(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        // 1) transparent background, no super.render()
+        int size = this.size;
+        int pixelHeight = (int) (entity.getHeight() * size);
+        int slotCX = getX() + getWidth() / 2;
+        int slotCY = getY() + getHeight() / 2;
+        int bottomY = slotCY + (pixelHeight / 2);
 
-        // 2) clamp GUI‑scale to [1..5], default Auto→3
-        int rawGui = parent.getGuiScale();    // 0 == Auto, otherwise 1–5
-        int clampedGui = (rawGui == 0) ? 3 : Math.min(rawGui, 5);
-
-        // 3) compute how “big” a block unit is in pixels
-        float baseSizePerBlock = 25F / Math.max(entity.getWidth(), entity.getHeight());
-
-        // 4) apply inverse scaling by GUI‑scale
-        double windowScale = parent.getScaleFactor();
-        double effectiveScale = windowScale / clampedGui;
-
-        // 5) final pixel size for our model
-        int size = Math.max(1, (int)(baseSizePerBlock * effectiveScale));
-
-        // 6) figure out its pixel‐height and vertical center
-        int pixelHeight = (int)(entity.getHeight() * size);
-        int slotCX      = getX() + getWidth()  / 2;
-        int slotCY      = getY() + getHeight() / 2;
-        int bottomY     = slotCY + (pixelHeight / 2);
-
-        // 7) draw it (with your -10, -10 offsets)
         try {
             InventoryScreen.drawEntity(
                     ctx,
-                    slotCX, bottomY - size,    // top-left (x1,y1)
-                    slotCX + size, bottomY,    // bottom-right (x2,y2)
+                    slotCX, bottomY,   // position
+                    0, 0,              // offsets (tu peux les laisser à 0)
                     size,
-                    0.0F,                      // rotation angle (use 0F if not needed)
-                    -10, -10,                  // mouseX, mouseY
+                    0.0F,              // yaw offset
+                    0.0F, 0.0F,    // rotations
                     entity
             );
-
         } catch (Exception e) {
             Identity.LOGGER.warn("Failed to render " + type.getEntityType().getTranslationKey(), e);
         }
 
-        // 8) star & outline on top
         if (starred) {
-            ctx.drawTexture(
-                    Identity.id("textures/gui/star.png"),
-                    getX(), getY(), 0, 0, 15, 15, 15, 15
-            );
+            ctx.drawTexture(Identity.id("textures/gui/star.png"), getX(), getY(), 0, 0, 15, 15, 15, 15);
         }
         if (active) {
             ctx.drawTexture(
@@ -135,16 +106,12 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         }
     }
 
-
-    // default button background is suppressed by not calling super.renderWidget
-
     @Override
-    public void onPress() { /* no-op */ }
+    public void onPress() { }
 
     public void setActive(boolean a) {
         this.active = a;
     }
-
 
     public void dispose() {
         if (entity != null) {
@@ -156,6 +123,5 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         type = null;
         parent = null;
     }
-
-
 }
+

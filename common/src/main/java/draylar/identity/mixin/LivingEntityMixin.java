@@ -20,12 +20,16 @@ import net.minecraft.entity.mob.SpiderEntity;
 import net.minecraft.entity.passive.BatEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -43,7 +47,7 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
     protected abstract int getNextAirOnLand(int air);
 
     @Shadow
-    public abstract boolean hasStatusEffect(StatusEffect effect);
+    public abstract boolean hasStatusEffect(RegistryEntry<StatusEffect> effect);
 
     protected LivingEntityMixin(EntityType<?> type, World world) {
         super(type, world);
@@ -74,6 +78,22 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
         }
     }
 
+//    @Inject(method = "getStepHeight", at = @At("HEAD"), remap = false)
+//    private void identity$modifyStepHeight(CallbackInfoReturnable<Float> cir) {
+//        if ((Object) this instanceof PlayerEntity player) {
+//            LivingEntity identity = PlayerIdentity.getIdentity(player);
+//
+//            if (identity != null) {
+//                if (identity.getType().isIn(IdentityEntityTags.STEP_ASSIST) || SafeTagManager.isCustomStepAssist(identity.getType())) {
+//                    this.stepHeight = 1.0F;
+//                    return;
+//                }
+//            }
+//        }
+//
+//        this.stepHeight = 0.6F;
+//    }
+
 
 
 
@@ -82,24 +102,27 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
 
     @Redirect(
             method = "travel",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;hasStatusEffect(Lnet/minecraft/entity/effect/StatusEffect;)Z", ordinal = 0)
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/LivingEntity;hasStatusEffect(Lnet/minecraft/registry/entry/RegistryEntry;)Z",
+                    ordinal = 0
+            )
     )
-    private boolean slowFall(LivingEntity livingEntity, StatusEffect effect) {
+    private boolean slowFall(LivingEntity livingEntity, RegistryEntry<StatusEffect> effect) {
         if ((Object) this instanceof PlayerEntity player) {
             LivingEntity identity = PlayerIdentity.getIdentity(player);
 
-            if (identity != null) {
-                if (!this.isSneaking()) {
-                    EntityType<?> type = identity.getType();
-                    if (type.isIn(IdentityEntityTags.SLOW_FALLING) || SafeTagManager.isCustomSlowFalling(type)) {
-                        return true;
-                    }
+            if (identity != null && !this.isSneaking()) {
+                EntityType<?> type = identity.getType();
+                if (type.isIn(IdentityEntityTags.SLOW_FALLING) || SafeTagManager.isCustomSlowFalling(type)) {
+                    return true;
                 }
             }
         }
 
         return this.hasStatusEffect(StatusEffects.SLOW_FALLING);
     }
+
 
 //    @Unique
 //    private boolean identity$isAquatic(LivingEntity identity) {
@@ -192,7 +215,7 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
             at = @At("HEAD"),
             cancellable = true
     )
-    private void returnHasNightVision(StatusEffect effect, CallbackInfoReturnable<Boolean> cir) {
+    private void returnHasNightVision(RegistryEntry<StatusEffect> effect, CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof PlayerEntity player) {
             if (effect.equals(StatusEffects.NIGHT_VISION)) {
                 LivingEntity identity = PlayerIdentity.getIdentity(player);
@@ -210,7 +233,7 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
             at = @At("HEAD"),
             cancellable = true
     )
-    private void returnNightVisionInstance(StatusEffect effect, CallbackInfoReturnable<StatusEffectInstance> cir) {
+    private void returnNightVisionInstance(RegistryEntry<StatusEffect> effect, CallbackInfoReturnable<StatusEffectInstance> cir) {
         if ((Object) this instanceof PlayerEntity player) {
             if (effect.equals(StatusEffects.NIGHT_VISION)) {
                 LivingEntity identity = PlayerIdentity.getIdentity(player);
@@ -223,20 +246,17 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "getEyeHeight", cancellable = true)
-    public void getEyeHeight(EntityPose pose, EntityDimensions dimensions, CallbackInfoReturnable<Float> cir) {
-        if((LivingEntity) (Object) this instanceof PlayerEntity player) {
-
-            // this is cursed
-            try {
-                LivingEntity identity = PlayerIdentity.getIdentity(player);
-
-                if(identity != null) {
-                    cir.setReturnValue(((LivingEntityCompatAccessor) identity).callGetEyeHeight(pose, dimensions));
-                }
-            } catch (Exception ignored) {}
+    @Inject(method = "getBaseDimensions", at = @At("HEAD"), cancellable = true)
+    private void identity_getBaseDimensions(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir) {
+        if ((Object)this instanceof PlayerEntity player) {
+            LivingEntity identity = PlayerIdentity.getIdentity(player);
+            if (identity != null) {
+                // just delegate to disguise
+                cir.setReturnValue(identity.getDimensions(pose));
+            }
         }
     }
+
 
     @Inject(method = "hurtByWater", at = @At("HEAD"), cancellable = true)
     protected void identity_hurtByWater(CallbackInfoReturnable<Boolean> cir) {
@@ -285,16 +305,18 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
         return nearbySongPlaying;
     }
 
-    @Inject(method = "isUndead", at = @At("HEAD"), cancellable = true)
-    protected void identity_isUndead(CallbackInfoReturnable<Boolean> cir) {
-        if((LivingEntity) (Object) this instanceof PlayerEntity player) {
+    @Inject(method = "canHaveStatusEffect", at = @At("HEAD"), cancellable = true)
+    private void identity_canHaveStatusEffect(StatusEffectInstance effect, CallbackInfoReturnable<Boolean> cir) {
+        if ((Object) this instanceof PlayerEntity player) {
             LivingEntity identity = PlayerIdentity.getIdentity(player);
 
             if (identity != null) {
-                cir.setReturnValue(identity.isUndead());
+                cir.setReturnValue(identity.canHaveStatusEffect(effect));
             }
         }
     }
+
+
 
     @Inject(method = "canWalkOnFluid", at = @At("HEAD"), cancellable = true)
     protected void identity_canWalkOnFluid(FluidState state, CallbackInfoReturnable<Boolean> cir) {

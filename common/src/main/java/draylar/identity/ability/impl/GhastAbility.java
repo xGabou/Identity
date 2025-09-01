@@ -4,23 +4,23 @@ import draylar.identity.ability.IdentityAbility;
 import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.entity.projectile.SmallFireballEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class GhastAbility extends IdentityAbility<GhastEntity> {
 
     @Override
     public void onUse(PlayerEntity player, GhastEntity identity, World world) {
-        FireballEntity fireball = new FireballEntity(
+        Vec3d look = player.getRotationVec(1.0F); // direction du regard
+        SmallFireballEntity fireball = new SmallFireballEntity(
                 world,
                 player,
-                player.getRotationVector().x,
-                player.getRotationVector().y,
-                player.getRotationVector().z,
-                2
+                look.multiply(0.5) // optionnel : vitesse (ici réduit pour être proche du vanilla blaze)
         );
 
         fireball.refreshPositionAndAngles(fireball.getX(), fireball.getY() + 1.75, fireball.getZ(), fireball.getYaw(), fireball.getPitch());

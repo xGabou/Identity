@@ -3,7 +3,6 @@ package draylar.identity.mixin;
 import draylar.identity.api.PlayerHostility;
 import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.platform.IdentityConfig;
-import net.minecraft.entity.EntityGroup;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -11,6 +10,7 @@ import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.tag.EntityTypeTags;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -45,7 +45,7 @@ public abstract class ActiveTargetGoalMixin extends TrackTargetGoalMixin {
                     }
 
                     // withers should ignore undead
-                    else if (this.mob instanceof WitherEntity && identity.getGroup().equals(EntityGroup.UNDEAD)) {
+                    else if (this.mob instanceof WitherEntity && identity.getType().isIn(EntityTypeTags.UNDEAD)) {
                         this.stop();
                         ci.cancel();
                     }
@@ -77,7 +77,7 @@ public abstract class ActiveTargetGoalMixin extends TrackTargetGoalMixin {
                     }
 
                     // withers should ignore undead
-                    else if (this.mob instanceof WitherEntity && identity.getGroup().equals(EntityGroup.UNDEAD)) {
+                    else if (this.mob instanceof WitherEntity && identity.getType().isIn(EntityTypeTags.UNDEAD)) {
                         cir.setReturnValue(false);
                     }
 

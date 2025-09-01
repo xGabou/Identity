@@ -6,14 +6,23 @@ import draylar.identity.api.ApplicablePacket;
 import draylar.identity.impl.DimensionsRefresher;
 import draylar.identity.impl.PlayerDataProvider;
 import draylar.identity.network.impl.FavoritePackets;
+import draylar.identity.network.impl.Payload;
 import draylar.identity.network.impl.UnlockPackets;
+import draylar.identity.network.impl.VillagerProfessionPackets;
 import io.netty.buffer.Unpooled;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import draylar.identity.network.impl.Payload.*;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,12 +30,29 @@ import java.util.UUID;
 public class ClientNetworking implements NetworkHandler {
 
     public static void registerPacketHandlers() {
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.IDENTITY_SYNC, ClientNetworking::handleIdentitySyncPacket);
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.FAVORITE_SYNC, FavoritePackets::handleFavoriteSyncPacket);
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.ABILITY_SYNC, ClientNetworking::handleAbilitySyncPacket);
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.UNLOCK_SYNC, UnlockPackets::handleUnlockSyncPacket);
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.CONFIG_SYNC, ClientNetworking::handleConfigurationSyncPacket);
+        NetworkManager.registerReceiver(
+                NetworkManager.Side.S2C,
+                IdentitySyncPayload.ID,
+                IdentitySyncPayload.CODEC,
+                ClientNetworking::handleIdentitySyncPacket
+        );
+        UnlockPackets.registerClientHandler();
+        FavoritePackets.registerFavoriteSyncHandler();
         VillagerProfessionPackets.registerClientHandler();
+        NetworkManager.registerReceiver(
+                NetworkManager.Side.S2C,
+                AbilitySyncPayload.ID,
+                AbilitySyncPayload.CODEC,
+                ClientNetworking::handleAbilitySyncPacket
+        );
+        NetworkManager.registerReceiver(
+                NetworkManager.Side.S2C,
+                ConfigSyncPayload.ID,
+                ConfigSyncPayload.CODEC,
+                ClientNetworking::handleConfigurationSyncPacket
+        );
+
+
     }
 
     public static void runOrQueue(NetworkManager.PacketContext context, ApplicablePacket packet) {
@@ -38,13 +64,14 @@ public class ClientNetworking implements NetworkHandler {
     }
 
     public static void sendAbilityRequest() {
-        NetworkManager.sendToServer(USE_ABILITY, new PacketByteBuf(Unpooled.buffer()));
+        NetworkManager.sendToServer(new UseAbilityPayload());
+
     }
 
-    public static void handleIdentitySyncPacket(PacketByteBuf packet, NetworkManager.PacketContext context) {
-        final UUID uuid = packet.readUuid();
-        final String id = packet.readString();
-        final NbtCompound entityNbt = packet.readNbt();
+    public static void handleIdentitySyncPacket(IdentitySyncPayload packet, NetworkManager.PacketContext context) {
+        final UUID uuid = packet.uuid();
+        final String id = packet.id();
+        final NbtCompound entityNbt = packet.entityNbt();
 
         runOrQueue(context, player -> {
             @Nullable PlayerEntity syncTarget = player.getEntityWorld().getPlayerByUuid(uuid);
@@ -73,7 +100,9 @@ public class ClientNetworking implements NetworkHandler {
 
                             // refresh player dimensions/hitbox on client
                             ((DimensionsRefresher) syncTarget).identity_refreshDimensions();
-                            syncTarget.setStepHeight(identity.getStepHeight()); // sync stepping ability
+                            syncTarget.getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT)
+                                    .setBaseValue(identity.getAttributeValue(EntityAttributes.GENERIC_STEP_HEIGHT));
+                            // sync stepping ability
                             syncTarget.setVelocity(syncTarget.getVelocity().multiply(1, 0, 1)); // reset vertical drag if any
                             syncTarget.fallDistance = 0.0F; // avoid weird midair fall damage
                             syncTarget.prevX = syncTarget.getX(); // reset motion interpolation
@@ -107,22 +136,26 @@ public class ClientNetworking implements NetworkHandler {
     }
 
 
-    public static void handleAbilitySyncPacket(PacketByteBuf packet, NetworkManager.PacketContext context) {
-        int cooldown = packet.readInt();
+    public static void handleAbilitySyncPacket(AbilitySyncPayload payload, NetworkManager.PacketContext context) {
+        int cooldown = payload.cooldown();
         runOrQueue(context, player -> ((PlayerDataProvider) player).setAbilityCooldown(cooldown));
     }
 
-    public static void handleConfigurationSyncPacket(PacketByteBuf packet, NetworkManager.PacketContext context) {
-        boolean enableClientSwapMenu = packet.readBoolean();
-        boolean showPlayerNametag = packet.readBoolean();
+
+    public static void handleConfigurationSyncPacket(ConfigSyncPayload payload, NetworkManager.PacketContext context) {
+        boolean enableClientSwapMenu = payload.enableClientSwapMenu();
+        boolean showPlayerNametag = payload.showPlayerNametag();
 
         // TODO: re-handle sync packet
-//        IdentityConfig.getInstance().enableClientSwapMenu() = enableClientSwapMenu;
-//        IdentityConfig.getInstance().showPlayerNametag() = showPlayerNametag;
-        // TODO: UNDO THIS WHEN THE PLAYER LEAVES - OMEGA CONFIG HANDLES THIS, BUT OUR BUDGET FORGE IMPLEMENTATION DOES NOT
+        // IdentityConfig.getInstance().setEnableClientSwapMenu(enableClientSwapMenu);
+        // IdentityConfig.getInstance().setShowPlayerNametag(showPlayerNametag);
     }
+
 
     private ClientNetworking() {
         // NO-OP
     }
+
+
+
 }

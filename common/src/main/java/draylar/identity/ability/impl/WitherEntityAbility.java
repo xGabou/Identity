@@ -19,7 +19,11 @@ public class WitherEntityAbility extends IdentityAbility<WitherEntity> {
 
         if (!world.isClient) {
             Vec3d lookDirection = player.getRotationVector();
-            WitherSkullEntity skull = new WitherSkullEntity(world, player, lookDirection.x, lookDirection.y, lookDirection.z);
+            WitherSkullEntity skull = new WitherSkullEntity(
+                    world,
+                    player,                // owner
+                    lookDirection.multiply(1.0D) // vitesse (multiplie pour ajuster)
+            );
             skull.setPos(player.getX(), player.getY() + 2, player.getZ());
             skull.setVelocity(player, player.getPitch(), player.getYaw(), 0.0F, 1.5F, 1.0F);
             world.spawnEntity(skull);

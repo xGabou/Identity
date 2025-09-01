@@ -67,6 +67,7 @@
     "accessor.ScreenAccessor",
     "accessor.SpiderEntityModelAccessor",
     "accessor.SquidEntityModelAccessor",
+    "accessor.ClientCommonNetworkHandlerAccessor",
     "player.ClientPlayerDataCacheMixin"
   ],
   "injectors": {

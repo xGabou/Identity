@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import draylar.identity.api.variant.TypeProvider;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.FrogEntity;
+import net.minecraft.entity.passive.FrogVariant;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
@@ -22,15 +24,21 @@ public class FrogTypeProvider extends TypeProvider<FrogEntity> {
 
     @Override
     public int getVariantData(FrogEntity entity) {
-        return Registries.FROG_VARIANT.getRawId(entity.getVariant());
+        // Récupère le FrogVariant depuis l'entry
+        FrogVariant variant = entity.getVariant().value();
+        return Registries.FROG_VARIANT.getRawId(variant);
     }
 
     @Override
     public FrogEntity create(EntityType<FrogEntity> type, World world, int data) {
         FrogEntity frog = new FrogEntity(type, world);
-        frog.setVariant(Registries.FROG_VARIANT.get(data));
+        // Obtenir le RegistryEntry<FrogVariant> à partir de l'id
+        RegistryEntry<FrogVariant> entry = Registries.FROG_VARIANT.getEntry(data)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid frog variant id: " + data));
+        frog.setVariant(entry);
         return frog;
     }
+
 
     @Override
     public int getFallbackData() {

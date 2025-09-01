@@ -43,7 +43,7 @@ public abstract class EntityMixin implements DimensionsRefresher {
     @Shadow private float standingEyeHeight;
 
     @Shadow
-    protected abstract float getEyeHeight(EntityPose pose, EntityDimensions dimensions);
+    protected abstract float getEyeHeight(EntityPose pose);
 
     @Inject(
             method = "getWidth",
@@ -82,13 +82,13 @@ public abstract class EntityMixin implements DimensionsRefresher {
         EntityDimensions newDimensions = this.getDimensions(entityPose);
 
         this.dimensions = newDimensions;
-        this.standingEyeHeight = this.getEyeHeight(entityPose, newDimensions);
+        this.standingEyeHeight = this.getEyeHeight(entityPose);
 
         Box box = this.getBoundingBox();
-        this.setBoundingBox(new Box(box.minX, box.minY, box.minZ, box.minX + (double) newDimensions.width, box.minY + (double) newDimensions.height, box.minZ + (double) newDimensions.width));
+        this.setBoundingBox(new Box(box.minX, box.minY, box.minZ, box.minX + (double) newDimensions.width(), box.minY + (double) newDimensions.height(), box.minZ + (double) newDimensions.width()));
 
         if(!this.firstUpdate) {
-            float f = currentDimensions.width - newDimensions.width;
+            float f = currentDimensions.width() - newDimensions.width();
             this.move(MovementType.SELF, new Vec3d(f, 0.0D, f));
         }
     }

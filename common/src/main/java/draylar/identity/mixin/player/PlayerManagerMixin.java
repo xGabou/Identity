@@ -4,6 +4,7 @@ import draylar.identity.api.PlayerFavorites;
 import draylar.identity.api.PlayerHostility;
 import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.PlayerUnlocks;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PlayerManagerMixin {
 
     @Inject(method = "respawnPlayer", at = @At(value = "RETURN"))
-    private void sendResyncPacketOnRespawn(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir) {
+    private void sendResyncPacketOnRespawn(ServerPlayerEntity player, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayerEntity> cir) {
         PlayerUnlocks.sync(player);
         PlayerFavorites.sync(player);
         PlayerIdentity.sync(player);

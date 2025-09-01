@@ -3,6 +3,7 @@ package draylar.identity.api;
 import dev.architectury.networking.NetworkManager;
 import draylar.identity.impl.PlayerDataProvider;
 import draylar.identity.network.NetworkHandler;
+import draylar.identity.network.impl.Payload;
 import io.netty.buffer.Unpooled;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
@@ -32,8 +33,9 @@ public class PlayerAbilities {
     }
 
     public static void sync(ServerPlayerEntity player) {
-        PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-        packet.writeInt(((PlayerDataProvider) player).getAbilityCooldown());
-        NetworkManager.sendToPlayer(player, NetworkHandler.ABILITY_SYNC, packet);
+        int cooldown = ((PlayerDataProvider) player).getAbilityCooldown();
+        Payload.AbilitySyncPayload payload = new Payload.AbilitySyncPayload(cooldown);
+        NetworkManager.sendToPlayer(player, payload);
     }
+
 }

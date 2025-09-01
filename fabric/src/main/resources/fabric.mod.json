@@ -22,6 +22,9 @@
     ],
     "client": [
       "draylar.identity.fabric.IdentityFabricClient"
+    ],
+    "modmenu": [
+      "draylar.identity.fabric.IdentityModMenuIntegration"
     ]
   },
   "mixins": [

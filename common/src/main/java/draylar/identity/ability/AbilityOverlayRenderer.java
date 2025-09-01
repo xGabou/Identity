@@ -43,7 +43,8 @@ public class AbilityOverlayRenderer {
 
             double d = client.getWindow().getScaleFactor();
             int cd = PlayerAbilities.getCooldown(player);
-            float lerpedCooldown = MathHelper.lerp(delta, cd - 1, cd);
+            float tickDelta = delta.getTickDelta(true);
+            float lerpedCooldown = MathHelper.lerp(tickDelta, cd - 1, cd);
             int max = AbilityRegistry.get(identity.getType()).getCooldown(identity);
             float cooldownScale = 1 - cd / (float) max;
 

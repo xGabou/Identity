@@ -26,26 +26,30 @@ public abstract class ShadowMixin {
 
     @Inject(
             method = "renderShadow",
-            at = @At("HEAD"))
-    private static void storeContext(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Entity entity, float opacity, float tickDelta, WorldView world, float radius, CallbackInfo ci) {
+            at = @At("HEAD")
+    )
+    private static void storeContext(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Entity entity,
+                                     float opacity, float tickDelta, WorldView world, float radius, CallbackInfo ci) {
         identity_shadowEntity = entity;
     }
 
     @ModifyVariable(
             method = "renderShadow",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerp(DDD)D", ordinal = 0), index = 7)
-    private static float adjustShadowSize(float originalSize) {
-        if(identity_shadowEntity instanceof PlayerEntity player) {
+            at = @At("HEAD"),
+            argsOnly = true,
+            ordinal = 0 // premier float après tickDelta = radius
+    )
+    private static float identity$adjustShadowSize(float originalSize) {
+        if (identity_shadowEntity instanceof PlayerEntity player) {
             LivingEntity identity = PlayerIdentity.getIdentity(player);
-
-            if(identity != null) {
+            if (identity != null) {
                 EntityRenderer<?> r = MinecraftClient.getInstance().getEntityRenderDispatcher().getRenderer(identity);
                 float shadowRadius = ((EntityShadowAccessor) r).getShadowRadius();
-                float mod = identity.isBaby() ? .5f : 1;
+                float mod = identity.isBaby() ? 0.5f : 1f;
                 return shadowRadius * mod;
             }
         }
-
         return originalSize;
     }
 }
+

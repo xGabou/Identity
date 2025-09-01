@@ -11,7 +11,9 @@ import draylar.identity.registry.IdentityEntityTags;
 import draylar.identity.util.AttributeSync;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
@@ -23,6 +25,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
@@ -42,7 +46,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class PlayerEntityMixin extends LivingEntityMixin {
 
     @Shadow public abstract boolean isSpectator();
-    @Shadow public abstract EntityDimensions getDimensions(EntityPose pose);
+
     @Shadow public abstract boolean isSwimming();
 
     private PlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
@@ -56,7 +60,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
             if(active == null) {
                 @Nullable String forced = IdentityConfig.getInstance().getForcedIdentity();
                 if(forced != null) {
-                    EntityType foundType = Registries.ENTITY_TYPE.get(new Identifier(forced));
+                    EntityType foundType = Registries.ENTITY_TYPE.get(Identifier.of(forced));
                     if(foundType != null) {
                         PlayerIdentity.updateIdentity(serverPlayerEntity, new IdentityType<LivingEntity>(
                                 foundType
@@ -67,7 +71,15 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
         }
     }
 
-    @Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
+//    @Unique
+//    public void identity$setCustomHeight(float height) {
+//
+//    }
+
+
+
+
+    @Inject(method = "getBaseDimensions", at = @At("HEAD"), cancellable = true)
     private void getDimensions(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir) {
         LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
 
@@ -95,7 +107,14 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
 
                 // copy of WaterCreatureEntity#tickWaterBreathingAir
                 if(this.isAlive() && !this.isInsideWaterOrBubbleColumn()) {
-                    int i = EnchantmentHelper.getRespiration((LivingEntity) (Object) this);
+                    LivingEntity entity = (LivingEntity) (Object) this;
+                    RegistryEntry<Enchantment> respirationEntry =
+                            entity.getWorld().getRegistryManager()
+                                    .get(RegistryKeys.ENCHANTMENT)
+                                    .entryOf(Enchantments.RESPIRATION);
+
+                    int i = EnchantmentHelper.getEquipmentLevel(respirationEntry, entity);
+
 
                     // If the player has respiration, 50% chance to not consume air
                     if(i > 0) {
@@ -121,34 +140,34 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
         }
     }
 
-    @Inject(method = "getActiveEyeHeight", at = @At("HEAD"), cancellable = true)
-    private void identity_getActiveEyeHeight(EntityPose pose, EntityDimensions dimensions, CallbackInfoReturnable<Float> cir) {
-        PlayerEntity playerEntity = (PlayerEntity) (Object) this;
+//    @Inject(method = "getActiveEyeHeight", at = @At("HEAD"), cancellable = true)
+//    private void identity_getActiveEyeHeight(EntityPose pose, EntityDimensions dimensions, CallbackInfoReturnable<Float> cir) {
+//        PlayerEntity playerEntity = (PlayerEntity) (Object) this;
+//
+//        // cursed
+//        try {
+//            LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
+//
+//            if(identity != null) {
+//                cir.setReturnValue(((LivingEntityCompatAccessor) identity).callGetActiveEyeHeight(getPose(), getDimensions(getPose())));
+//            }
+//        } catch (Exception ignored) {
+//
+//        }
+//    }
 
-        // cursed
-        try {
-            LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
-
-            if(identity != null) {
-                cir.setReturnValue(((LivingEntityCompatAccessor) identity).callGetActiveEyeHeight(getPose(), getDimensions(getPose())));
-            }
-        } catch (Exception ignored) {
-
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    @Override
-    public float getEyeHeight(EntityPose pose) {
-        PlayerEntity playerEntity = (PlayerEntity) (Object) this;
-        LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
-
-        if(identity != null) {
-            return identity.getEyeHeight(pose);
-        } else {
-            return this.getEyeHeight(pose, this.getDimensions(pose));
-        }
-    }
+//    @Environment(EnvType.CLIENT)
+//    @Override
+//    public float getEyeHeight(EntityPose pose) {
+//        PlayerEntity playerEntity = (PlayerEntity) (Object) this;
+//        LivingEntity identity = PlayerIdentity.getIdentity((PlayerEntity) (Object) this);
+//
+//        if(identity != null) {
+//            return identity.getEyeHeight(pose);
+//        } else {
+//            return this.getEyeHeight(pose, this.getDimensions(pose));
+//        }
+//    }
 
     @Inject(
             method = "getHurtSound",
@@ -300,7 +319,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
                         if (!helmet.isEmpty() && helmet.isDamageable()) {
                             helmet.setDamage(helmet.getDamage() + player.getRandom().nextInt(2));
                             if (helmet.getDamage() >= helmet.getMaxDamage()) {
-                                player.sendEquipmentBreakStatus(EquipmentSlot.HEAD);
+                                player.sendEquipmentBreakStatus(helmet.getItem(),EquipmentSlot.HEAD);
                                 player.equipStack(EquipmentSlot.HEAD, ItemStack.EMPTY);
                             }
 
