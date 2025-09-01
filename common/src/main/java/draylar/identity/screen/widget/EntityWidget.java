@@ -86,9 +86,8 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         ctx.fill(x, y, x + w, y + h, 0x60204080);
         ctx.drawBorder(x, y, w, h, 0xFFFFFFFF);
 
-        // normalize entity size
-        float unit = Math.max(entity.getWidth(), entity.getHeight());
-//        int scale  = Math.max(1, Math.round((Math.min(w, h) * 0.8f) / unit))/2;
+        // normalize entity size relative to the cell and entity dimensions
+        float unit = Math.max(0.6f, Math.max(entity.getWidth(), entity.getHeight()));
         int scale = getSize();
         // clip entity to this cell
         int x1 = x;
@@ -130,15 +129,15 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
 
 
     private int getSize() {
-        int rawGui = parent.getGuiScale();
-        int clampedGui = (rawGui == 0) ? 3 : Math.min(rawGui, 5);
+        // Size the entity to a fraction of the cell size, normalized by entity bounding box.
+        // This naturally responds to GUI scale because the widget dimensions are in scaled pixels.
+        int cell = Math.max(1, Math.min(getWidth(), getHeight()));
+        float unit = Math.max(0.6f, Math.max(entity.getWidth(), entity.getHeight()));
 
-        float baseSizePerBlock = 25F / Math.max(entity.getWidth(), entity.getHeight());
-
-        double windowScale = parent.getScaleFactor();
-        double effectiveScale = windowScale / clampedGui;
-
-        return Math.max(1, (int) (baseSizePerBlock * effectiveScale));
+        // Fit entity to ~70% of the cell's smaller dimension
+        float target = cell * 0.70f;
+        int size = Math.max(8, Math.round(target / unit));
+        return size;
     }
 
     @Override

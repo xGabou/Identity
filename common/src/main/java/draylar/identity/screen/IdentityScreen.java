@@ -239,17 +239,37 @@ public class IdentityScreen extends Screen {
         // GL_DEPTH_BUFFER_BIT = 0x00000100 (256)
         RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
 
+        // Scissor to the scrollable content area
         ctx.enableScissor(0, headerH, this.width, this.height);
 
         for (EntityWidget<?> w : entityWidgets) {
             int wy = w.getY() - scrollY + headerH; // shift widget into scroll space
             int wh = w.getHeight();
+            int wx = w.getX();
+            int ww = w.getWidth();
 
-            if (wy + wh < headerH || wy > this.height) continue;
+            // Skip fully hidden widgets (not visible in vertical viewport)
+            if (wy + wh < headerH || wy > this.height) {
+                continue;
+            }
 
             ctx.getMatrices().push();
             ctx.getMatrices().translate(0, wy - w.getY(), 0); // apply per-widget translation
-            w.render(ctx, mx, my, delta);
+
+            // Extra per-cell scissor: prevents models from bleeding into neighboring boxes
+            int sx1 = Math.max(0, wx);
+            int sy1 = Math.max(headerH, wy);
+            int sx2 = Math.min(this.width, wx + ww);
+            int sy2 = Math.min(this.height, wy + wh);
+            ctx.enableScissor(sx1, sy1, sx2, sy2);
+
+            // Adjust mouse Y so widget-hover math matches unscrolled local coords
+            int adjMy = (int) (my + scrollY - headerH);
+            w.render(ctx, mx, adjMy, delta);
+
+            ctx.disableScissor();
+            // Restore the scroll area scissor for the next widget
+            ctx.enableScissor(0, headerH, this.width, this.height);
             ctx.getMatrices().pop();
             // Clear depth between widgets to prevent any possible cross-widget clipping
             // if a model extends beyond its cell or shares pixels due to projection.
@@ -281,6 +301,9 @@ public class IdentityScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mx, double my, double horiz, double vert) {
         if (entityWidgets.isEmpty()) return false;
+        int headerH = getHeaderHeight();
+        // Only scroll when the cursor is inside the scrollable list area
+        if (my < headerH || my > this.height) return false;
 
         int rowH   = entityWidgets.get(0).getHeight();
         int rows   = (int)Math.ceil(unlocked.size() / 7f);
