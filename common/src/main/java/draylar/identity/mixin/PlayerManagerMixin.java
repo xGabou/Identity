@@ -39,13 +39,23 @@ public class PlayerManagerMixin {
         ((DimensionsRefresher) newPlayer).identity_refreshDimensions();
 
         // Re-sync max health for identity
-        if(identity != null && IdentityConfig.getInstance().scalingHealth()) {
+        if (identity != null && IdentityConfig.getInstance().scalingHealth()) {
             float prevMax = player.getMaxHealth();
             float ratio = prevMax <= 0 ? 1.0F : newPlayer.getHealth() / prevMax;
             float newMax = Math.min(IdentityConfig.getInstance().maxHealth(), identity.getMaxHealth());
             newPlayer.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(newMax);
             newPlayer.setHealth(Math.max(1.0F, ratio * newMax));
-            newPlayer.networkHandler.sendPacket(new EntityAttributesS2CPacket(newPlayer.getId(), newPlayer.getAttributes().getAttributesToSend()));
+
+            // ✅ NeoForge 1.21.1: must use send(packet, null)
+            newPlayer.networkHandler.send(
+                    new EntityAttributesS2CPacket(
+                            newPlayer.getId(),
+                            newPlayer.getAttributes().getAttributesToSend()
+                    ),
+                    null
+            );
         }
     }
+
 }
+
