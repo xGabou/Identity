@@ -1,4 +1,4 @@
-package draylar.identity.mixin;
+package draylar.identity.fabric.mixin;
 
 import draylar.identity.Identity;
 import draylar.identity.api.PlayerIdentity;

@@ -53,7 +53,6 @@
     "ClientLivingEntityMixin",
     "ClientPlayerDebugMixin",
     "DrownedOverlayMixin",
-    "InGameHudMixin",
     "PlayerEntityRendererMixin",
     "ShadowMixin",
     "StrayOverlayMixin",
