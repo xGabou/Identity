@@ -204,7 +204,9 @@ public class IdentityScreen extends Screen {
 
     @Override
     public void render(DrawContext ctx, int mx, int my, float delta) {
-        renderBackground(ctx, mx, my, delta);
+        // Use texture background to avoid fullscreen blur affecting UI text
+        ctx.fill(0, 0, width, height, 0xB0000000);
+
         renderEntityGrid(ctx, mx, my, delta);
 
         if (unlocked.isEmpty()) {
@@ -221,48 +223,37 @@ public class IdentityScreen extends Screen {
         helpButton.render(ctx, mx, my, delta);
     }
 
-    private void renderEntityGrid(DrawContext ctx, int mx, int my, float delta) {
-        double sf       = client.getWindow().getScaleFactor();
-        int    headerH  = getHeaderHeight();
-        int    viewH    = this.height - headerH;
-        int    scrollTop= scrollY;
-        int    scrollBot= scrollY + viewH;
 
-        // 1) Clip below the header
-        RenderSystem.enableScissor(
-                0,
-                (int)(headerH * sf),
-                (int)(width   * sf),
-                (int)(viewH   * sf)
-        );
+    protected void renderEntityGrid(DrawContext ctx, int mx, int my, float delta) {
+        int headerH   = getHeaderHeight();
+        int viewH     = this.height - headerH;
+        int scrollTop = scrollY;
+        int scrollBot = scrollY + viewH;
+        RenderSystem.enableDepthTest();
+        RenderSystem.clearDepth(1.0F);
 
-        // 2) Push & translate into scroll‑space
+        // 1 clip the area below the header in screen coords
+        ctx.enableScissor(0, headerH, this.width, this.height);
+
+        // 2 draw widgets in scrolled space
         ctx.getMatrices().push();
         ctx.getMatrices().translate(0, headerH - scrollY, 0);
 
-        // 3) Draw only visible widgets
-        for(EntityWidget w : entityWidgets) {
+        for (EntityWidget<?> w : entityWidgets) {
             int wy = w.getY(), wh = w.getHeight();
-            if(wy + wh < scrollTop || wy > scrollBot) continue;
+            if (wy + wh < scrollTop || wy > scrollBot) continue;
+
+            // pass adjusted mouse Y so base render can compute hover correctly
             w.render(ctx, mx, my + scrollY - headerH, delta);
         }
 
         ctx.getMatrices().pop();
-        RenderSystem.disableScissor();
+        ctx.disableScissor();
 
-        // 4) **Draw tooltip** at the **raw** mouse coords
-        //    (we test against the **adjusted** Y, but render at the real Y)
-        for(EntityWidget w : entityWidgets) {
-            if(w.isMouseOver(mx, my + scrollY - headerH)) {
-                ctx.drawTooltip(
-                        client.textRenderer,
-                        w.getHoverName(),
-                        mx, my
-                );
-                break;
-            }
-        }
+        // No manual tooltip here
+        // The base AbstractWidget.render will render the widget tooltip for you
     }
+
     // somewhere in your IdentityScreen (you already have getGuiScale() and getScaleFactor()):
     public double getEffectiveGuiScale() {
         int raw = client.options.getGuiScale().getValue();

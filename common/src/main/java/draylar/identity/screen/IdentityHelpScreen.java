@@ -16,33 +16,35 @@ public class IdentityHelpScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
+        // Avoid blur; render the standard options background texture
+        this.renderInGameBackground(context);
 
+
+        // Draw crisp text without fractional scaling
         MatrixStack matrices = context.getMatrices();
         matrices.push();
         matrices.scale(0.75f, 0.75f, 0.75f);
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.welcome"), 15, 15, 0xffffff, true);
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.credits"), 15, 30, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.welcome"), 15, 15, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.credits"), 15, 30, 0xffffff, true);
 
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.support_label").formatted(Formatting.BOLD), 15, 60, 0xffffff, true);
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.support_description"), 15, 75, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.support_label").formatted(Formatting.BOLD), 15, 60, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.support_description"), 15, 75, 0xffffff, true);
 
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.ability_label").formatted(Formatting.BOLD), 15, 100, 0xffffff, true);
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.ability_description_1"), 15, 115, 0xffffff, true);
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.ability_description_2"), 15, 130, 0xffffff, true);
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.ability_description_3"), 15, 145, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.ability_label").formatted(Formatting.BOLD), 15, 100, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.ability_description_1"), 15, 115, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.ability_description_2"), 15, 130, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.ability_description_3"), 15, 145, 0xffffff, true);
 
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.config_label").formatted(Formatting.BOLD), 15, 175, 0xffffff, true);
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.config_description"), 15, 190, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.config_label").formatted(Formatting.BOLD), 15, 175, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.config_description"), 15, 190, 0xffffff, true);
 
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.credits_label").formatted(Formatting.BOLD), 15, 220, 0xffffff, true);
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.credits_general"), 15, 235, 0xffffff, true);
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.credits_translators"), 15, 250, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.credits_label").formatted(Formatting.BOLD), 15, 220, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.credits_general"), 15, 235, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.credits_translators"), 15, 250, 0xffffff, true);
 
-        context.drawText( MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.return").formatted(Formatting.ITALIC), 15, height + 60, 0xffffff, true);
+        context.drawText(MinecraftClient.getInstance().textRenderer, Text.translatable("identity.help.return").formatted(Formatting.ITALIC), 15, this.height - 20, 0xffffff, true);
 
         matrices.pop();
-
         super.render(context, mouseX, mouseY, delta);
     }
 

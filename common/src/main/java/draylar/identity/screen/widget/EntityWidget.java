@@ -14,8 +14,10 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.text.Text;
 
 public class EntityWidget<T extends LivingEntity> extends PressableWidget {
+
     public static int VERTICAL_OFFSET = 30;
     private static int BASE_Y_OFFSET = 10;
+
     private IdentityType<T> type;
     private T entity;
     private int size;
@@ -38,11 +40,12 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         this.starred = starred;
         this.active = current;
 
-        // Stable per-entity render size in GUI pixels (independent of window/fullscreen scale)
-        float denom = Math.max(entity.getWidth(), entity.getHeight());
-        int base = (int) (30F / (denom <= 0.0001F ? 1.0F : denom));
-        this.size = Math.max(12, Math.min(base, 60));
-        entity.setCustomNameVisible(false);
+        float baseSizeFactor = (float) (25F / Math.max(entity.getWidth(), entity.getHeight()));
+        double scaleFactor = parent.getScaleFactor();
+        int guiScale = parent.getGuiScale();
+        double finalScale = scaleFactor / (guiScale == 0 ? 1 : guiScale);
+        this.size = Math.max(1, (int) (baseSizeFactor * finalScale));
+
         entity.setGlowing(true);
         setTooltip(Tooltip.of(type.createTooltipText(entity)));
     }
@@ -72,22 +75,26 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         return type.createTooltipText(entity);
     }
 
+    // 1.21.1: do not override render, override renderWidget instead
     @Override
     protected void renderWidget(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        int size = this.size;
+        int size = getSize();
+
         int pixelHeight = (int) (entity.getHeight() * size);
         int slotCX = getX() + getWidth() / 2;
         int slotCY = getY() + getHeight() / 2;
         int bottomY = slotCY + (pixelHeight / 2);
 
         try {
+            // InventoryScreen.drawEntity(ctx, x, y, xOffset, yOffset, size, yawOffset, mouseX, mouseY, entity)
             InventoryScreen.drawEntity(
                     ctx,
-                    slotCX, bottomY,   // position
-                    0, 0,              // offsets (tu peux les laisser à 0)
+                    slotCX,
+                    bottomY,
+                    -10, -10,
                     size,
-                    0.0F,              // yaw offset
-                    0.0F, 0.0F,    // rotations
+                    0.0F,
+                    0.0F, 0.0F,
                     entity
             );
         } catch (Exception e) {
@@ -95,7 +102,10 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         }
 
         if (starred) {
-            ctx.drawTexture(Identity.id("textures/gui/star.png"), getX(), getY(), 0, 0, 15, 15, 15, 15);
+            ctx.drawTexture(
+                    Identity.id("textures/gui/star.png"),
+                    getX(), getY(), 0, 0, 15, 15, 15, 15
+            );
         }
         if (active) {
             ctx.drawTexture(
@@ -104,6 +114,24 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
                     0, 0, 48, 32, 48, 32
             );
         }
+
+        // keep legacy hover behavior so tooltip follows your bounds check
+        this.hovered = mouseX >= getX() && mouseY >= getY()
+                && mouseX < getX() + getWidth()
+                && mouseY < getY() + getHeight();
+    }
+
+
+    private int getSize() {
+        int rawGui = parent.getGuiScale();
+        int clampedGui = (rawGui == 0) ? 3 : Math.min(rawGui, 5);
+
+        float baseSizePerBlock = 25F / Math.max(entity.getWidth(), entity.getHeight());
+
+        double windowScale = parent.getScaleFactor();
+        double effectiveScale = windowScale / clampedGui;
+
+        return Math.max(1, (int) (baseSizePerBlock * effectiveScale));
     }
 
     @Override
@@ -124,4 +152,3 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         parent = null;
     }
 }
-
