@@ -1,10 +1,12 @@
 package draylar.identity.screen.widget;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import draylar.identity.Identity;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.network.impl.FavoritePackets;
 import draylar.identity.network.impl.SwapPackets;
 import draylar.identity.screen.IdentityScreen;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
@@ -78,22 +80,23 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
     // 1.21.1: do not override render, override renderWidget instead
     @Override
     protected void renderWidget(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        int size = getSize();
+        int x = getX(), y = getY(), w = getWidth(), h = getHeight();
 
-        int pixelHeight = (int) (entity.getHeight() * size);
-        int slotCX = getX() + getWidth() / 2;
-        int slotCY = getY() + getHeight() / 2;
-        int bottomY = slotCY + (pixelHeight / 2);
+        // debug background
+        ctx.fill(x, y, x + w, y + h, 0x60204080);
+        ctx.drawBorder(x, y, w, h, 0xFFFFFFFF);
+
+        // scale
+        float unit = Math.max(entity.getWidth(), entity.getHeight());
+        int scale  = Math.max(1, Math.round(0.9f * Math.min(w, h) / unit));
 
         try {
-            // InventoryScreen.drawEntity(ctx, x, y, xOffset, yOffset, size, yawOffset, mouseX, mouseY, entity)
             InventoryScreen.drawEntity(
                     ctx,
-                    slotCX,
-                    bottomY,
-                    -10, -10,
-                    size,
-                    0.0F,
+                    x, y,
+                    x + w, y + h,
+                    scale,
+                    0.0625F,
                     0.0F, 0.0F,
                     entity
             );
@@ -101,25 +104,20 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
             Identity.LOGGER.warn("Failed to render " + type.getEntityType().getTranslationKey(), e);
         }
 
+        RenderSystem.disableDepthTest();
         if (starred) {
-            ctx.drawTexture(
-                    Identity.id("textures/gui/star.png"),
-                    getX(), getY(), 0, 0, 15, 15, 15, 15
-            );
+            ctx.drawTexture(Identity.id("textures/gui/star.png"), x, y, 0, 0, 15, 15, 15, 15);
         }
         if (active) {
-            ctx.drawTexture(
-                    Identity.id("textures/gui/selected.png"),
-                    getX(), getY(), getWidth(), getHeight(),
-                    0, 0, 48, 32, 48, 32
-            );
+            ctx.drawTexture(Identity.id("textures/gui/selected.png"), x, y, w, h, 0, 0, 48, 32, 48, 32);
         }
 
-        // keep legacy hover behavior so tooltip follows your bounds check
-        this.hovered = mouseX >= getX() && mouseY >= getY()
-                && mouseX < getX() + getWidth()
-                && mouseY < getY() + getHeight();
+        this.hovered = mouseX >= x && mouseY >= y && mouseX < x + w && mouseY < y + h;
     }
+
+
+
+
 
 
     private int getSize() {

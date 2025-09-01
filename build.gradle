@@ -66,6 +66,12 @@ subprojects {
         // If you remove this line, sources will not be generated.
         withSourcesJar()
 
+        // Use Java 21 via Gradle toolchains so builds work even if the
+        // system default Java is older (e.g., Java 17 on some setups).
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }

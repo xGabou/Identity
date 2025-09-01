@@ -5,9 +5,7 @@
   "package": "draylar.identity.neoforge.mixin",
   "plugin": "draylar.identity.neoforge.mixin.IdentityMixinPlugin",
   "mixins": [
-    "WitherEntityMixin",
     "BjornCompatMixin"
-
   ],
   "client": [],
   "injectors": {

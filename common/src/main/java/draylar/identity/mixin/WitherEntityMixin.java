@@ -1,4 +1,4 @@
-package draylar.identity.fabric.mixin;
+package draylar.identity.mixin;
 
 import draylar.identity.api.PlayerIdentity;
 import net.minecraft.entity.EntityType;
@@ -10,12 +10,8 @@ import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(WitherEntity.class)

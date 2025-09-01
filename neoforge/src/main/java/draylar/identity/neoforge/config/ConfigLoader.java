@@ -54,6 +54,11 @@ public class ConfigLoader {
             }
         }
     }
+    public static void save(IdentityNeoForgeConfig config) {
+        Path configFolder = Platform.getConfigFolder();
+        Path configFile = Paths.get(configFolder.toString(), "identity.json");
+        writeConfigFile(configFile, config);
+    }
 
     private static void writeConfigFile(Path file, IdentityNeoForgeConfig config) {
         try {

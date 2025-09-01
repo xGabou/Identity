@@ -28,8 +28,7 @@
     ]
   },
   "mixins": [
-    "identity.mixins.json",
-    "identity-fabric.mixins.json"
+    "identity.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.17.2",
