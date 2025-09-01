@@ -229,30 +229,39 @@ public class IdentityScreen extends Screen {
         int viewH     = this.height - headerH;
         int scrollTop = scrollY;
         int scrollBot = scrollY + viewH;
+
+        // Ensure a clean depth buffer before rendering any 3D entities.
+        // Without an explicit clear, previously rendered entities (or previous frames)
+        // can leave depth values behind, causing models to appear cut or "decal" onto others
+        // when scrolling. Clearing fixes entities clipping each other across rows/frames.
         RenderSystem.enableDepthTest();
         RenderSystem.clearDepth(1.0F);
+        // GL_DEPTH_BUFFER_BIT = 0x00000100 (256)
+        RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
 
-        // 1 clip the area below the header in screen coords
         ctx.enableScissor(0, headerH, this.width, this.height);
 
-        // 2 draw widgets in scrolled space
-        ctx.getMatrices().push();
-        ctx.getMatrices().translate(0, headerH - scrollY, 0);
-
         for (EntityWidget<?> w : entityWidgets) {
-            int wy = w.getY(), wh = w.getHeight();
-            if (wy + wh < scrollTop || wy > scrollBot) continue;
+            int wy = w.getY() - scrollY + headerH; // shift widget into scroll space
+            int wh = w.getHeight();
 
-            // pass adjusted mouse Y so base render can compute hover correctly
-            w.render(ctx, mx, my + scrollY - headerH, delta);
+            if (wy + wh < headerH || wy > this.height) continue;
+
+            ctx.getMatrices().push();
+            ctx.getMatrices().translate(0, wy - w.getY(), 0); // apply per-widget translation
+            w.render(ctx, mx, my, delta);
+            ctx.getMatrices().pop();
+            // Clear depth between widgets to prevent any possible cross-widget clipping
+            // if a model extends beyond its cell or shares pixels due to projection.
+            RenderSystem.clearDepth(1.0F);
+            RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
         }
 
-        ctx.getMatrices().pop();
         ctx.disableScissor();
-
-        // No manual tooltip here
-        // The base AbstractWidget.render will render the widget tooltip for you
+        // Return to regular 2D UI rendering
+        RenderSystem.disableDepthTest();
     }
+
 
     // somewhere in your IdentityScreen (you already have getGuiScale() and getScaleFactor()):
     public double getEffectiveGuiScale() {

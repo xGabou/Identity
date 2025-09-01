@@ -82,22 +82,30 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
     protected void renderWidget(DrawContext ctx, int mouseX, int mouseY, float delta) {
         int x = getX(), y = getY(), w = getWidth(), h = getHeight();
 
-        // debug background
+        // draw debug box
         ctx.fill(x, y, x + w, y + h, 0x60204080);
         ctx.drawBorder(x, y, w, h, 0xFFFFFFFF);
 
-        // scale
+        // normalize entity size
         float unit = Math.max(entity.getWidth(), entity.getHeight());
-        int scale  = Math.max(1, Math.round(0.9f * Math.min(w, h) / unit));
+//        int scale  = Math.max(1, Math.round((Math.min(w, h) * 0.8f) / unit))/2;
+        int scale = getSize();
+        // clip entity to this cell
+        int x1 = x;
+        int y1 = y;
+        int x2 = x + w;
+        int y2 = y + h;
+
+        // vertical offset so mobs stand in the middle
+        float yOffset = 0.25f; // tweakable, 0.0 = feet at bottom, 0.5 = more centered
 
         try {
             InventoryScreen.drawEntity(
                     ctx,
-                    x, y,
-                    x + w, y + h,
+                    x1, y1, x2, y2,
                     scale,
-                    0.0625F,
-                    0.0F, 0.0F,
+                    0,
+                    mouseX, mouseY,
                     entity
             );
         } catch (Exception e) {
@@ -114,6 +122,7 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
 
         this.hovered = mouseX >= x && mouseY >= y && mouseX < x + w && mouseY < y + h;
     }
+
 
 
 
