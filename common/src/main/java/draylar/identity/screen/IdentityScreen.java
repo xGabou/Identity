@@ -53,6 +53,10 @@ public class IdentityScreen extends Screen {
         return client.getWindow().getScaleFactor();
     }
 
+    public int getScrollY(){
+        return scrollY;
+    }
+
 
     @Override
     protected void init() {
@@ -198,7 +202,7 @@ public class IdentityScreen extends Screen {
         }
     }
 
-    private int getHeaderHeight() {
+    public int getHeaderHeight() {
         return (int)(searchBar.getY() + searchBar.getHeight() + 5);
     }
 
@@ -225,38 +229,45 @@ public class IdentityScreen extends Screen {
 
 
    protected void renderEntityGrid(DrawContext ctx, int mx, int my, float delta) {
-    int headerH = getHeaderHeight();
-    int viewH   = this.height - headerH;
+       double sf       = client.getWindow().getScaleFactor();
+       int    headerH  = getHeaderHeight();
+       int    viewH    = this.height - headerH;
+       int    scrollTop= scrollY;
+       int    scrollBot= scrollY + viewH;
+       // 1) Clip below the header
+       RenderSystem.enableScissor(
+               0,
+               (int)(headerH * sf),
+               (int)(width   * sf),
+               (int)(viewH   * sf)
+       );
 
-    // Enable depth once
-    RenderSystem.enableDepthTest();
+       // 2) Push & translate into scroll‑space
+       ctx.getMatrices().push();
+       ctx.getMatrices().translate(0, headerH - scrollY, 0);
 
-    // Apply ONE scissor for the scroll area
-    double sf = client.getWindow().getScaleFactor();
-    RenderSystem.enableScissor(
-        0,
-        (int)((this.height - viewH) * sf), // flip Y because scissor is bottom-left
-        (int)(this.width * sf),
-        (int)(viewH * sf)
-    );
+       // 3) Draw only visible widgets
+       for(EntityWidget w : entityWidgets) {
+           int wy = w.getY(), wh = w.getHeight();
+           if(wy + wh < scrollTop || wy > scrollBot) continue;
+           w.render(ctx, mx, my + scrollY - headerH, delta);
+       }
 
-    // Draw all visible widgets
-    for (EntityWidget<?> w : entityWidgets) {
-        int wy = w.getY() - scrollY + headerH;
-        int wh = w.getHeight();
-        if (wy + wh < headerH || wy > this.height) continue;
+       ctx.getMatrices().pop();
+       RenderSystem.disableScissor();
 
-        ctx.getMatrices().push();
-        ctx.getMatrices().translate(0, wy - w.getY(), 0);
-
-        int adjMy = (int)(my + scrollY - headerH);
-        w.render(ctx, mx, adjMy, delta);
-
-        ctx.getMatrices().pop();
-    }
-
-    RenderSystem.disableScissor();
-    RenderSystem.disableDepthTest();
+       // 4) **Draw tooltip** at the **raw** mouse coords
+       //    (we test against the **adjusted** Y, but render at the real Y)
+       for(EntityWidget w : entityWidgets) {
+           if(w.isMouseOver(mx, my + scrollY - headerH)) {
+               ctx.drawTooltip(
+                       client.textRenderer,
+                       w.getHoverName(),
+                       mx, my
+               );
+               break;
+           }
+       }
 }
 
 
@@ -278,21 +289,20 @@ public class IdentityScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mx, double my, double horiz, double vert) {
         if (entityWidgets.isEmpty()) return false;
-        int headerH = getHeaderHeight();
-        // Only scroll when the cursor is inside the scrollable list area
-        if (my < headerH || my > this.height) return false;
 
         int rowH   = entityWidgets.get(0).getHeight();
         int rows   = (int)Math.ceil(unlocked.size() / 7f);
         int totalH = rows * rowH;
         int viewH  = this.height - getHeaderHeight();
+        // allow 10px of “empty” space at the bottom
         int bottomPadding = 10;
         int maxY = Math.max(0, totalH - viewH + bottomPadding);
 
-        // use vertical scroll
+        // Use vertical scroll delta instead of old "amount"
         scrollY = Math.max(0, Math.min(scrollY - (int)(vert * rowH), maxY));
         return true;
     }
+
 
     @Override
     public void resize(MinecraftClient client, int width, int height) {
@@ -322,6 +332,7 @@ public class IdentityScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
+        if (entityWidgets.isEmpty()) return false;
         int hh = getHeaderHeight();
         // if we clicked below the header, first try our scrolled widgets:
         if (my >= hh) {

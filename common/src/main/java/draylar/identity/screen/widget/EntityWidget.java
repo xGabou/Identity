@@ -14,6 +14,8 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.text.Text;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class EntityWidget<T extends LivingEntity> extends PressableWidget {
 
@@ -80,47 +82,129 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
     // 1.21.1: do not override render, override renderWidget instead
     @Override
     protected void renderWidget(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        int x = getX(), y = getY(), w = getWidth(), h = getHeight();
+        // 2) clamp GUI-scale to [1..5], default Auto→3
+        int rawGui = parent.getGuiScale();    // 0 == Auto, otherwise 1–5
+        int clampedGui = (rawGui == 0) ? 3 : Math.min(rawGui, 5);
 
-        // draw debug box
-        ctx.fill(x, y, x + w, y + h, 0x60204080);
-        ctx.drawBorder(x, y, w, h, 0xFFFFFFFF);
+        // 3) compute how “big” a block unit is in pixels
+        float baseSizePerBlock = 25F / Math.max(entity.getWidth(), entity.getHeight());
 
-        // normalize entity size relative to the cell and entity dimensions
-        float unit = Math.max(0.6f, Math.max(entity.getWidth(), entity.getHeight()));
-        int scale = getSize();
-        // clip entity to this cell
-        int x1 = x;
-        int y1 = y;
-        int x2 = x + w;
-        int y2 = y + h;
+        // 4) apply inverse scaling by GUI-scale
+        double windowScale = parent.getScaleFactor();
+        double effectiveScale = windowScale / clampedGui;
 
-        // vertical offset so mobs stand in the middle
-        float yOffset = 0.25f; // tweakable, 0.0 = feet at bottom, 0.5 = more centered
+        // 5) final pixel size for our model
+        int scale = Math.max(1, (int)(baseSizePerBlock * effectiveScale));
+
+        // 6) pixel height of entity
+        int pixelHeight = (int)(entity.getHeight() * scale);
+
+        // 7) old-style bottom anchoring
+        int slotCX  = getX() + getWidth()  / 2;
+        int slotCY  = getY() + getHeight() / 2;
+        int bottomY = slotCY + (pixelHeight / 2);
+
+        // Relative mouse movement vs entity anchor
+        float relMouseX = (mouseX - slotCX);
+        float relMouseY = (mouseY - bottomY);
 
         try {
-            InventoryScreen.drawEntity(
+            drawEntityCompat(
                     ctx,
-                    x1, y1, x2, y2,
+                    slotCX, bottomY,
                     scale,
-                    0,
-                    mouseX, mouseY,
+                    relMouseX, relMouseY,
                     entity
             );
         } catch (Exception e) {
             Identity.LOGGER.warn("Failed to render " + type.getEntityType().getTranslationKey(), e);
         }
 
-        RenderSystem.disableDepthTest();
+        // overlays
         if (starred) {
-            ctx.drawTexture(Identity.id("textures/gui/star.png"), x, y, 0, 0, 15, 15, 15, 15);
+            ctx.drawTexture(
+                    Identity.id("textures/gui/star.png"),
+                    getX(), getY(), 0, 0, 15, 15, 15, 15
+            );
         }
         if (active) {
-            ctx.drawTexture(Identity.id("textures/gui/selected.png"), x, y, w, h, 0, 0, 48, 32, 48, 32);
+            ctx.drawTexture(
+                    Identity.id("textures/gui/selected.png"),
+                    getX(), getY(), getWidth(), getHeight(),
+                    0, 0, 48, 32, 48, 32
+            );
         }
-
-        this.hovered = mouseX >= x && mouseY >= y && mouseX < x + w && mouseY < y + h;
     }
+
+//    public static void drawEntityCompat(
+//            DrawContext context,
+//            int slotCX, int bottomY, int scale,
+//            float relMouseX, float relMouseY,
+//            LivingEntity entity
+//    ) {
+//        // Old quaternions (exactly like 1.20.1)
+//        float f = (float)Math.atan(relMouseX / 40.0F);
+//        float g = (float)Math.atan(relMouseY / 40.0F);
+//        Quaternionf q1 = new Quaternionf().rotateZ((float)Math.PI);
+//        Quaternionf q2 = new Quaternionf().rotateX(g * 20.0F * ((float)Math.PI / 180F));
+//        q1.mul(q2);
+//
+//        // Entity-space anchor (this replaces bottomY)
+//        float p = entity.getScale();
+//        Vector3f anchor = new Vector3f(0.0F, entity.getHeight() / 2.0F, 0.0F);
+//
+//        float normalizedScale = (float)scale / p;
+//
+//        InventoryScreen.drawEntity(context, slotCX, bottomY, normalizedScale, anchor, q1, q2, entity);
+//    }
+    public static void drawEntityCompat(
+            DrawContext context,
+            int slotCX, int bottomY, int scale,
+            float relMouseX, float relMouseY,
+            LivingEntity entity
+    ) {
+
+
+        // Centerpoint
+        float f = (float)Math.atan(-relMouseX / 40.0F);
+        float g = (float)Math.atan(-relMouseY / 40.0F);
+        Quaternionf q1 = new Quaternionf().rotateZ((float)Math.PI);
+        Quaternionf q2 = new Quaternionf().rotateX(g * 20.0F * ((float)Math.PI / 180F));
+        q1.mul(q2);
+
+        // Save old rotation
+        float prevBodyYaw = entity.bodyYaw;
+        float prevYaw = entity.getYaw();
+        float prevPitch = entity.getPitch();
+        float prevHeadYaw = entity.prevHeadYaw;
+        float prevHeadYaw2 = entity.headYaw;
+
+        // Apply facing
+        entity.bodyYaw = 180.0F + f * 20.0F;
+        entity.setYaw(180.0F + f * 40.0F);
+        entity.setPitch(-g * 20.0F);
+        entity.headYaw = entity.getYaw();
+        entity.prevHeadYaw = entity.getYaw();
+
+        float p = entity.getScale();
+        Vector3f anchor = new Vector3f(0.0F, entity.getHeight() / 2.0F, 0.0F);
+
+        float normalizedScale = (float)scale / p;
+
+        // Render entity without anchor
+        InventoryScreen.drawEntity(context, slotCX, bottomY, normalizedScale, anchor, q1, q2, entity);
+
+        // Restore rotation
+        entity.bodyYaw = prevBodyYaw;
+        entity.setYaw(prevYaw);
+        entity.setPitch(prevPitch);
+        entity.prevHeadYaw = prevHeadYaw;
+        entity.headYaw = prevHeadYaw2;
+    }
+
+
+
+
 
 
 
