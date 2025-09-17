@@ -224,63 +224,40 @@ public class IdentityScreen extends Screen {
     }
 
 
-    protected void renderEntityGrid(DrawContext ctx, int mx, int my, float delta) {
-        int headerH   = getHeaderHeight();
-        int viewH     = this.height - headerH;
-        int scrollTop = scrollY;
-        int scrollBot = scrollY + viewH;
+   protected void renderEntityGrid(DrawContext ctx, int mx, int my, float delta) {
+    int headerH = getHeaderHeight();
+    int viewH   = this.height - headerH;
 
-        // Ensure a clean depth buffer before rendering any 3D entities.
-        // Without an explicit clear, previously rendered entities (or previous frames)
-        // can leave depth values behind, causing models to appear cut or "decal" onto others
-        // when scrolling. Clearing fixes entities clipping each other across rows/frames.
-        RenderSystem.enableDepthTest();
-        RenderSystem.clearDepth(1.0F);
-        // GL_DEPTH_BUFFER_BIT = 0x00000100 (256)
-        RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+    // Enable depth once
+    RenderSystem.enableDepthTest();
 
-        // Scissor to the scrollable content area
-        ctx.enableScissor(0, headerH, this.width, this.height);
+    // Apply ONE scissor for the scroll area
+    double sf = client.getWindow().getScaleFactor();
+    RenderSystem.enableScissor(
+        0,
+        (int)((this.height - viewH) * sf), // flip Y because scissor is bottom-left
+        (int)(this.width * sf),
+        (int)(viewH * sf)
+    );
 
-        for (EntityWidget<?> w : entityWidgets) {
-            int wy = w.getY() - scrollY + headerH; // shift widget into scroll space
-            int wh = w.getHeight();
-            int wx = w.getX();
-            int ww = w.getWidth();
+    // Draw all visible widgets
+    for (EntityWidget<?> w : entityWidgets) {
+        int wy = w.getY() - scrollY + headerH;
+        int wh = w.getHeight();
+        if (wy + wh < headerH || wy > this.height) continue;
 
-            // Skip fully hidden widgets (not visible in vertical viewport)
-            if (wy + wh < headerH || wy > this.height) {
-                continue;
-            }
+        ctx.getMatrices().push();
+        ctx.getMatrices().translate(0, wy - w.getY(), 0);
 
-            ctx.getMatrices().push();
-            ctx.getMatrices().translate(0, wy - w.getY(), 0); // apply per-widget translation
+        int adjMy = (int)(my + scrollY - headerH);
+        w.render(ctx, mx, adjMy, delta);
 
-            // Extra per-cell scissor: prevents models from bleeding into neighboring boxes
-            int sx1 = Math.max(0, wx);
-            int sy1 = Math.max(headerH, wy);
-            int sx2 = Math.min(this.width, wx + ww);
-            int sy2 = Math.min(this.height, wy + wh);
-            ctx.enableScissor(sx1, sy1, sx2, sy2);
-
-            // Adjust mouse Y so widget-hover math matches unscrolled local coords
-            int adjMy = (int) (my + scrollY - headerH);
-            w.render(ctx, mx, adjMy, delta);
-
-            ctx.disableScissor();
-            // Restore the scroll area scissor for the next widget
-            ctx.enableScissor(0, headerH, this.width, this.height);
-            ctx.getMatrices().pop();
-            // Clear depth between widgets to prevent any possible cross-widget clipping
-            // if a model extends beyond its cell or shares pixels due to projection.
-            RenderSystem.clearDepth(1.0F);
-            RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
-        }
-
-        ctx.disableScissor();
-        // Return to regular 2D UI rendering
-        RenderSystem.disableDepthTest();
+        ctx.getMatrices().pop();
     }
+
+    RenderSystem.disableScissor();
+    RenderSystem.disableDepthTest();
+}
 
 
     // somewhere in your IdentityScreen (you already have getGuiScale() and getScaleFactor()):
