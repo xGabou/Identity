@@ -235,9 +235,6 @@ public class IdentityScreen extends Screen {
         // can leave depth values behind, causing models to appear cut or "decal" onto others
         // when scrolling. Clearing fixes entities clipping each other across rows/frames.
         RenderSystem.enableDepthTest();
-        RenderSystem.clearDepth(1.0F);
-        // GL_DEPTH_BUFFER_BIT = 0x00000100 (256)
-        RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
 
         // Scissor to the scrollable content area
         ctx.enableScissor(0, headerH, this.width, this.height);
