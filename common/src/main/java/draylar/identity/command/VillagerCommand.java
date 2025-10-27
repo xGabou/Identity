@@ -29,7 +29,11 @@ public class VillagerCommand {
                                         player.sendMessage(Text.literal("Saved villager professions:"), false);
                                         map.forEach((name, tag) -> {
                                             String prof = tag.getString("ProfessionId");
-                                            player.sendMessage(Text.literal("- " + name + " -> " + prof), false);
+                                            String dim = tag.getString("WorkstationDim");
+                                            long posLong = tag.contains("WorkstationPos") ? tag.getLong("WorkstationPos") : Long.MIN_VALUE;
+                                            net.minecraft.util.math.BlockPos blockPos = posLong == Long.MIN_VALUE ? null : net.minecraft.util.math.BlockPos.fromLong(posLong);
+                                            String location = blockPos == null ? "?" : (blockPos.getX() + ", " + blockPos.getY() + ", " + blockPos.getZ());
+                                            player.sendMessage(Text.literal("- " + name + " -> " + prof + " @ " + dim + " " + location), false);
                                         });
                                         return 1;
                                     }))
@@ -45,7 +49,11 @@ public class VillagerCommand {
                                                 }
                                                 NbtCompound tag = map.get(name);
                                                 String prof = tag.getString("ProfessionId");
-                                                player.sendMessage(Text.literal("Villager '" + name + "' profession: " + prof), false);
+                                                String dim = tag.getString("WorkstationDim");
+                                                long posLong = tag.contains("WorkstationPos") ? tag.getLong("WorkstationPos") : Long.MIN_VALUE;
+                                                net.minecraft.util.math.BlockPos blockPos = posLong == Long.MIN_VALUE ? null : net.minecraft.util.math.BlockPos.fromLong(posLong);
+                                                String location = blockPos == null ? "?" : (blockPos.getX() + ", " + blockPos.getY() + ", " + blockPos.getZ());
+                                                player.sendMessage(Text.literal("Villager '" + name + "' profession: " + prof + " @ " + dim + " " + location), false);
                                                 return 1;
                                             })))
             );
