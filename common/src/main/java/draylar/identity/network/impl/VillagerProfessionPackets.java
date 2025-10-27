@@ -11,9 +11,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.text.Text;
+import net.minecraft.village.VillagerData;
+import net.minecraft.village.VillagerProfession;
 
 public class VillagerProfessionPackets {
 
@@ -136,11 +139,17 @@ public class VillagerProfessionPackets {
         }
 
         NbtCompound tag = new NbtCompound();
+        VillagerProfession profession =
+                Registries.VILLAGER_PROFESSION.getOrEmpty(professionId)
+                        .orElse(VillagerProfession.NONE);
+
+        villager.setVillagerData(new VillagerData(villager.getVillagerData().getType(), profession,villager.getVillagerData().getLevel()));
         villager.writeNbt(tag);
         tag.putString("ProfessionId", professionId.toString());
         tag.putString("WorkstationDim", worldId.toString());
         tag.putLong("WorkstationPos", workstationPos);
         tag.putString("IdentityName", trimmedName);
+
 
         data.setVillagerIdentity(trimmedName, tag);
         if (existingKey != null && !existingKey.equals(trimmedName)) {
@@ -153,7 +162,6 @@ public class VillagerProfessionPackets {
         } else if (existingKey == null) {
             data.setActiveVillagerKey(trimmedName);
         }
-
         Text professionText = Text.literal(professionId.toString());
         player.sendMessage(Text.translatable(existingKey != null ? "identity.profession.updated" : "identity.profession.saved", trimmedName, professionText), false);
         world.spawnParticles(net.minecraft.particle.ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY() + 1.0, player.getZ(), 10, 0.5, 0.5, 0.5, 0.0);

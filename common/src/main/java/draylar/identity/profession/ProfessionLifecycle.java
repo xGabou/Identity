@@ -66,8 +66,10 @@ public final class ProfessionLifecycle {
         iterator.remove();
         PlayerDataProvider data = (PlayerDataProvider) player;
         if (key.equals(data.getActiveVillagerKey())) {
+            data.getVillagerIdentities().get(key).getCompound());
             data.setActiveVillagerKey(null);
         }
+
         player.sendMessage(Text.translatable("identity.profession.block_destroyed", key, Text.literal(prof)), false);
         PlayerIdentity.sync(player);
     }
