@@ -50,16 +50,23 @@ public abstract class VillagerEntityMixin {
         }
 
         if (owner != null) {
-            NbtCompound tag = new NbtCompound();
-            villager.writeNbt(tag);
-            tag.putString("ProfessionId", Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession()).toString());
             PlayerDataProvider data = (PlayerDataProvider) owner;
-            data.getVillagerIdentities().forEach((name, nbt) -> {
-                if (nbt.getString("ProfessionId").equals(tag.getString("ProfessionId"))) {
-                    data.setVillagerIdentity(name, tag);
+            String activeKey = data.getActiveVillagerKey();
+            if (activeKey != null && data.getVillagerIdentities().containsKey(activeKey)) {
+                NbtCompound existing = data.getVillagerIdentities().get(activeKey);
+                NbtCompound updated = new NbtCompound();
+                villager.writeNbt(updated);
+                updated.putString("ProfessionId", Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession()).toString());
+                if (existing.contains("WorkstationDim")) {
+                    updated.putString("WorkstationDim", existing.getString("WorkstationDim"));
                 }
-            });
-            PlayerIdentity.sync(owner);
+                if (existing.contains("WorkstationPos")) {
+                    updated.putLong("WorkstationPos", existing.getLong("WorkstationPos"));
+                }
+                updated.putString("IdentityName", activeKey);
+                data.setVillagerIdentity(activeKey, updated);
+                PlayerIdentity.sync(owner);
+            }
         }
     }
 }
