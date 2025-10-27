@@ -5,6 +5,7 @@ import draylar.identity.fabric.IdentityFabric;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -370,5 +371,160 @@ public class IdentityFabricConfig extends IdentityConfig implements ConfigData {
     @Override
     public String getForcedIdentity() {
         return null;
+    }
+
+    @Override
+    public void setOverlayIdentityUnlocks(boolean value) {
+        overlayIdentityUnlocks = value;
+    }
+
+    @Override
+    public void setOverlayIdentityRevokes(boolean value) {
+        overlayIdentityRevokes = value;
+    }
+
+    @Override
+    public void setRevokeIdentityOnDeath(boolean value) {
+        revokeIdentityOnDeath = value;
+    }
+
+    @Override
+    public void setIdentitiesEquipItems(boolean value) {
+        identitiesEquipItems = value;
+    }
+
+    @Override
+    public void setIdentitiesEquipArmor(boolean value) {
+        identitiesEquipArmor = value;
+    }
+
+    @Override
+    public void setShowPlayerNametag(boolean value) {
+        showPlayerNametag = value;
+    }
+
+    @Override
+    public void setRenderOwnNameTag(boolean value) {
+        renderOwnNametag = value;
+    }
+
+    @Override
+    public void setHostilesIgnoreHostileIdentityPlayer(boolean value) {
+        hostilesIgnoreHostileIdentityPlayer = value;
+    }
+
+    @Override
+    public void setHostilesForgetNewHostileIdentityPlayer(boolean value) {
+        hostilesForgetNewHostileIdentityPlayer = value;
+    }
+
+    @Override
+    public void setWolvesAttackIdentityPrey(boolean value) {
+        wolvesAttackIdentityPrey = value;
+    }
+
+    @Override
+    public void setOwnedWolvesAttackIdentityPrey(boolean value) {
+        ownedWolvesAttackIdentityPrey = value;
+    }
+
+    @Override
+    public void setVillagersRunFromIdentities(boolean value) {
+        villagersRunFromIdentities = value;
+    }
+
+    @Override
+    public void setFoxesAttackIdentityPrey(boolean value) {
+        foxesAttackIdentityPrey = value;
+    }
+
+    @Override
+    public void setUseIdentitySounds(boolean value) {
+        useIdentitySounds = value;
+    }
+
+    @Override
+    public void setPlayAmbientSounds(boolean value) {
+        playAmbientSounds = value;
+    }
+
+    @Override
+    public void setHearSelfAmbient(boolean value) {
+        hearSelfAmbient = value;
+    }
+
+    @Override
+    public void setEnableFlight(boolean value) {
+        enableFlight = value;
+    }
+
+    @Override
+    public void setHostilityTime(int ticks) {
+        hostilityTime = ticks;
+    }
+
+    @Override
+    public void setScalingHealth(boolean value) {
+        scalingHealth = value;
+    }
+
+    @Override
+    public void setMaxHealth(int value) {
+        maxHealth = value;
+    }
+
+    @Override
+    public void setEnableClientSwapMenu(boolean value) {
+        enableClientSwapMenu = value;
+    }
+
+    @Override
+    public void setForceChangeNew(boolean value) {
+        forceChangeNew = value;
+    }
+
+    @Override
+    public void setForceChangeAlways(boolean value) {
+        forceChangeAlways = value;
+    }
+
+    @Override
+    public void setLogCommands(boolean value) {
+        logCommands = value;
+    }
+
+    @Override
+    public void setFlySpeed(float value) {
+        flySpeed = value;
+    }
+
+    @Override
+    public void setKillForIdentity(boolean value) {
+        killForIdentity = value;
+    }
+
+    @Override
+    public void setRequiredKillsForIdentity(int value) {
+        requiredKillsForIdentity = value;
+    }
+
+    @Override
+    public void setEndermanAbilityTeleportDistance(int value) {
+        endermanAbilityTeleportDistance = value;
+    }
+
+    @Override
+    public void setWardenIsBlinded(boolean value) {
+        wardenIsBlinded = value;
+    }
+
+    @Override
+    public void setWardenBlindsNearby(boolean value) {
+        wardenBlindsNearby = value;
+    }
+
+    @Override
+    public void setForcedIdentity(@Nullable String id) {
+        forcedIdentity = id;
     }
 }
