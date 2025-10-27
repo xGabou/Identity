@@ -18,6 +18,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.RavagerEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -50,6 +51,7 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
     @Unique private LivingEntity identity = null;
     @Unique private IdentityType<?> identityType = null;
     @Unique private final Map<String, NbtCompound> villagerIdentities = new HashMap<>();
+    @Unique private @Nullable String activeVillagerKey = null;
 
     private PlayerEntityDataMixin(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);
@@ -122,6 +124,13 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         for(String key : villagerTag.getKeys()) {
             villagerIdentities.put(key, villagerTag.getCompound(key));
         }
+
+        if(tag.contains("ActiveVillagerKey", NbtElement.STRING_TYPE)) {
+            String storedKey = tag.getString("ActiveVillagerKey");
+            activeVillagerKey = storedKey.isEmpty() ? null : storedKey;
+        } else {
+            activeVillagerKey = null;
+        }
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("RETURN"))
@@ -155,6 +164,10 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         NbtCompound villagerTag = new NbtCompound();
         villagerIdentities.forEach((key, value) -> villagerTag.put(key, value.copy()));
         tag.put("VillagerIdentities", villagerTag);
+
+        if(activeVillagerKey != null && !activeVillagerKey.isEmpty()) {
+            tag.putString("ActiveVillagerKey", activeVillagerKey);
+        }
     }
 
     @Unique
@@ -285,12 +298,28 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
     @Override
     public void removeVillagerIdentity(String key) {
         villagerIdentities.remove(key);
+        if(activeVillagerKey != null && activeVillagerKey.equals(key)) {
+            activeVillagerKey = null;
+        }
+    }
+
+    @Override
+    public @Nullable String getActiveVillagerKey() {
+        return activeVillagerKey;
+    }
+
+    @Override
+    public void setActiveVillagerKey(@Nullable String key) {
+        activeVillagerKey = key;
     }
 
     @Unique
     @Override
     public void setIdentity(LivingEntity identity) {
         this.identity = identity;
+        if(!(identity instanceof VillagerEntity)) {
+            activeVillagerKey = null;
+        }
     }
 
     @Unique
@@ -303,6 +332,9 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         }
 
         this.identity = identity;
+        if(!(identity instanceof VillagerEntity)) {
+            activeVillagerKey = null;
+        }
 
         // refresh entity hitbox dimensions
         ((DimensionsRefresher) player).identity_refreshDimensions();

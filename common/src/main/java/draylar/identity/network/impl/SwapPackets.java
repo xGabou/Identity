@@ -3,6 +3,7 @@ package draylar.identity.network.impl;
 import dev.architectury.networking.NetworkManager;
 import draylar.identity.Identity;
 import draylar.identity.api.PlayerIdentity;
+import draylar.identity.impl.PlayerDataProvider;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.network.ClientNetworking;
@@ -33,23 +34,28 @@ public class SwapPackets {
                             .anyMatch(p -> p.equalsIgnoreCase(context.getPlayer().getGameProfile().getName()))) {
                         if(IdentityCompatUtils.isBlacklistedEntityType(entityType)) {
                             PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), null, null);
+                            ((PlayerDataProvider) context.getPlayer()).setActiveVillagerKey(null);
                         } else if(entityType.equals(EntityType.PLAYER)) {
                             PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), null, null);
+                            ((PlayerDataProvider) context.getPlayer()).setActiveVillagerKey(null);
                         } else {
                             @Nullable IdentityType<LivingEntity> type = IdentityType.from(entityType, variant);
                             if(type != null) {
                                 try {
                                     LivingEntity created;
+                                    String selectedVillagerKey = null;
                                     if (entityType.equals(EntityType.VILLAGER) && variant >= 1_000_000) {
                                         int index = variant - 1_000_000;
                                         draylar.identity.impl.PlayerDataProvider data = (draylar.identity.impl.PlayerDataProvider) context.getPlayer();
                                         java.util.List<String> keys = new java.util.ArrayList<>(data.getVillagerIdentities().keySet());
                                         java.util.Collections.sort(keys);
                                         if (index >= 0 && index < keys.size()) {
-                                            net.minecraft.nbt.NbtCompound tag = data.getVillagerIdentities().get(keys.get(index));
+                                            String key = keys.get(index);
+                                            net.minecraft.nbt.NbtCompound tag = data.getVillagerIdentities().get(key);
                                             net.minecraft.nbt.NbtCompound copy = tag.copy();
                                             copy.putString("id", net.minecraft.registry.Registries.ENTITY_TYPE.getId(EntityType.VILLAGER).toString());
                                             created = (LivingEntity) EntityType.loadEntityWithPassengers(copy, context.getPlayer().getWorld(), it -> it);
+                                            selectedVillagerKey = key;
                                         } else {
                                             created = type.create(context.getPlayer().getWorld());
                                         }
@@ -57,6 +63,7 @@ public class SwapPackets {
                                         created = type.create(context.getPlayer().getWorld());
                                     }
                                     PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), type, created);
+                                    ((PlayerDataProvider) context.getPlayer()).setActiveVillagerKey(selectedVillagerKey);
                                 } catch (Exception e) {
                                     IdentityCompatUtils.markIncompatibleEntityType(entityType);
                                     Identity.LOGGER.warn("Failed to create identity " + entityType.getTranslationKey(), e);
@@ -76,6 +83,7 @@ public class SwapPackets {
                         IdentityConfig.getInstance().allowedSwappers().stream()
                             .anyMatch(p -> p.equalsIgnoreCase(context.getPlayer().getGameProfile().getName()))) {
                         PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), null, null);
+                        ((PlayerDataProvider) context.getPlayer()).setActiveVillagerKey(null);
                     }
 
                     context.getPlayer().calculateDimensions();
