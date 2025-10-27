@@ -12,4 +12,10 @@ public class ForgeConfigReloader implements ConfigReloader {
 
         System.out.println("[Identity] Forge config reloaded.");
     }
+
+    @Override
+    public void saveConfig() {
+        ConfigLoader.save(IdentityForge.CONFIG);
+        IdentityPlatform.setConfig(IdentityForge.CONFIG);
+    }
 }
