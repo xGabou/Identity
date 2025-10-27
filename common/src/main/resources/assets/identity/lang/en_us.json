@@ -47,5 +47,7 @@
   "identity.profession.prompt": "Enter a name to save this villager job.",
   "identity.profession.current_name": "Current name: %s",
   "identity.profession.current_profession": "Current profession: %s",
-  "identity.profession.block_destroyed": "Villager '%s' lost their job (%s) because the workstation was destroyed."
+  "identity.profession.block_destroyed": "Villager '%s' lost their job (%s) because the workstation was destroyed.",
+  "identity.profession.trade.self_disabled": "Enable canTradeWithHimSelf in the config to trade with your own villager identity.",
+  "identity.profession.trade.require_villager": "You must be disguised as a villager to trade with yourself."
 }

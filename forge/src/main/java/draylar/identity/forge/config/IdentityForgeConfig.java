@@ -44,7 +44,7 @@ public class IdentityForgeConfig extends IdentityConfig {
     public int maxHealth = 20;
     public boolean enableClientSwapMenu = true;
     public boolean enableSwaps = true;
-    public boolean allowSelfTrading = false;
+    public boolean canTradeWithHimSelf = false;
     public List<String> allowedSwappers = new ArrayList<>();
     public int endermanAbilityTeleportDistance = 32;
     public boolean showPlayerNametag = false;
@@ -288,12 +288,12 @@ public class IdentityForgeConfig extends IdentityConfig {
 
     @Override
     public boolean allowSelfTrading() {
-        return allowSelfTrading;
+        return canTradeWithHimSelf;
     }
 
     @Override
     public void setAllowSelfTrading(boolean allow) {
-        this.allowSelfTrading = allow;
+        this.canTradeWithHimSelf = allow;
     }
 
     @Override
