@@ -85,6 +85,7 @@ modrinth {
     versionType = "release"
     dependencies {
         required.project "lhGA9TYQ"
+        required.project "N8aGZtvj"
     }
     uploadFile = file("build/libs/${archivesBaseName}-${version}.jar")
 }
