@@ -35,6 +35,6 @@
     "fabricloader": ">=0.17.2",
     "fabric": "*",
     "architectury": "*",
-    "gaboulibs": ">=1.3.0"
+    "gaboulibs": "*"
   }
 }
