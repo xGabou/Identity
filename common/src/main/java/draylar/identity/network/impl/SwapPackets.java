@@ -8,7 +8,7 @@ import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.api.variant.IdentityType;
 import draylar.identity.network.ClientNetworking;
 import draylar.identity.network.NetworkHandler;
-import draylar.identity.util.IdentityCompatUtils;
+import net.Gabou.gaboulibs.util.CompatUtils;
 import io.netty.buffer.Unpooled;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -32,7 +32,7 @@ public class SwapPackets {
                         context.getPlayer().hasPermissionLevel(3) ||
                         IdentityConfig.getInstance().allowedSwappers().stream()
                             .anyMatch(p -> p.equalsIgnoreCase(context.getPlayer().getGameProfile().getName()))) {
-                        if(IdentityCompatUtils.isBlacklistedEntityType(entityType)) {
+                        if(CompatUtils.isBlacklistedEntityType(entityType.toString())) {
                             PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), null, null);
                             ((PlayerDataProvider) context.getPlayer()).setActiveVillagerKey(null);
                         } else if(entityType.equals(EntityType.PLAYER)) {
@@ -65,7 +65,7 @@ public class SwapPackets {
                                     PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), type, created);
                                     ((PlayerDataProvider) context.getPlayer()).setActiveVillagerKey(selectedVillagerKey);
                                 } catch (Exception e) {
-                                    IdentityCompatUtils.markIncompatibleEntityType(entityType);
+                                    CompatUtils.markIncompatibleEntityType(entityType.toString());
                                     Identity.LOGGER.warn("Failed to create identity " + entityType.getTranslationKey(), e);
                                 }
                             }

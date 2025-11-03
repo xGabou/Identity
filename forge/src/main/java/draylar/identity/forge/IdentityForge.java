@@ -9,7 +9,7 @@ import draylar.identity.forge.ability.NaturalistAbilityRegistry;
 import draylar.identity.forge.config.ConfigLoader;
 import draylar.identity.forge.config.ForgeConfigReloader;
 import draylar.identity.forge.config.IdentityForgeConfig;
-import draylar.identity.util.IdentityCompatUtils;
+import net.Gabou.gaboulibs.util.CompatUtils;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -17,7 +17,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 @Mod("identity")
 public class IdentityForge {
 
-    public static final boolean isAlexsMobsLoaded = IdentityCompatUtils.isAlexsMobsLoaded();
+    public static final boolean isAlexsMobsLoaded = CompatUtils.isAlexsMobsLoaded();
     //public static final boolean isNaturalistLoaded = IdentityCompatUtils.isNaturalistLoaded();
     public static final int CONFIG_VERSION = 5;
     public static IdentityForgeConfig CONFIG;

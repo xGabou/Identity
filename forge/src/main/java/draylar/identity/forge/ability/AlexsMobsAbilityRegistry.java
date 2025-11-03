@@ -2,16 +2,10 @@ package draylar.identity.forge.ability;
 
 import com.github.alexthe666.alexsmobs.entity.AMEntityRegistry;
 import draylar.identity.ability.AbilityRegistry;
-import draylar.identity.ability.IdentityAbility;
 import draylar.identity.forge.IdentityForge;
 import draylar.identity.forge.ability.impl.*;
-import draylar.identity.util.IdentityCompatUtils;
 //import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EntityType;
-import net.minecraftforge.registries.RegistryObject;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class AlexsMobsAbilityRegistry {
 

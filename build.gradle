@@ -84,4 +84,34 @@ allprojects {
     java {
         withSourcesJar()
     }
+    
+    
+    
+}
+import groovy.json.JsonOutput
+tasks.register("discordWebhook") {
+    doLast {
+        def webhookUrl = System.getenv("DISCORD_WEBHOOK_URL")
+        def changelogText = rootProject.file("IdentityChangeLog.md").text
+
+        def payload = [
+                username: "Build Bot",
+                allowed_mentions: [ parse: ["roles"] ],
+                content: "**New release published!** 🎉\n" +
+                        "<@&1363945953546997810>\n" + // role mention
+                        "Project: Identity\n" +
+                        "Version: v${version}\n\n" +
+                        "${changelogText.take(1891)}"
+        ]
+
+        println "Sending release notification to Discord..."
+        def connection = new URL(webhookUrl).openConnection()
+        connection.with {
+            doOutput = true
+            requestMethod = "POST"
+            setRequestProperty("Content-Type", "application/json")
+            outputStream.withWriter("UTF-8") { it << JsonOutput.toJson(payload) }
+            println "Webhook sent with response code: ${responseCode}"
+        }
+    }
 }

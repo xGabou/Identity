@@ -118,6 +118,13 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
         // Current Identity
         readCurrentIdentity(tag.getCompound("CurrentIdentity"));
 
+        // Align step height on load to avoid temporary desync
+        if (identity != null) {
+            ((PlayerEntity)(Object)this).setStepHeight(identity.getStepHeight());
+        } else {
+            ((PlayerEntity)(Object)this).setStepHeight(0.6F);
+        }
+
         // Villager Identities
         villagerIdentities.clear();
         NbtCompound villagerTag = tag.getCompound("VillagerIdentities");
@@ -338,6 +345,13 @@ public abstract class PlayerEntityDataMixin extends LivingEntity implements Play
 
         // refresh entity hitbox dimensions
         ((DimensionsRefresher) player).identity_refreshDimensions();
+
+        // Align server step height with identity (prevents movement desync)
+        if (identity != null) {
+            player.setStepHeight(identity.getStepHeight());
+        } else {
+            player.setStepHeight(0.6F);
+        }
 
         // Identity is valid and scaling health is on; set entity's max health and current health to reflect identity.
         if (identity != null && IdentityConfig.getInstance().scalingHealth()) {

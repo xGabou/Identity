@@ -20,5 +20,6 @@ public class PlayerManagerMixin {
         PlayerUnlocks.sync(player);
         PlayerFavorites.sync(player);
         PlayerIdentity.sync(player);
+        draylar.identity.network.impl.VillagerIdentitiesPackets.sendSync(player);
     }
 }

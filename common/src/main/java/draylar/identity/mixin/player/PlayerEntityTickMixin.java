@@ -1,9 +1,12 @@
 package draylar.identity.mixin.player;
 
+import draylar.identity.Identity;
+import draylar.identity.api.FlightHelper;
 import draylar.identity.api.IdentityTickHandler;
 import draylar.identity.api.IdentityTickHandlers;
 import draylar.identity.api.PlayerAbilities;
 import draylar.identity.api.PlayerIdentity;
+import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.impl.PlayerDataProvider;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -48,6 +51,19 @@ public abstract class PlayerEntityTickMixin extends LivingEntity {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
             PlayerAbilities.setCooldown(player, Math.max(0, data.getAbilityCooldown() - 1));
             PlayerAbilities.sync(player);
+
+            // Sync flight abilities with identity state
+            boolean shouldAllowFlight = Identity.hasFlyingPermissions(player);
+            if (shouldAllowFlight != player.getAbilities().allowFlying) {
+                if (shouldAllowFlight) {
+                    FlightHelper.grantFlightTo(player);
+                    player.getAbilities().setFlySpeed(IdentityConfig.getInstance().flySpeed());
+                } else {
+                    FlightHelper.revokeFlight(player);
+                    player.getAbilities().setFlySpeed(0.05f);
+                }
+                player.sendAbilitiesUpdate();
+            }
 
             // Validate villager profession bindings periodically
             draylar.identity.profession.ProfessionLifecycle.tickValidate(player, player.age);

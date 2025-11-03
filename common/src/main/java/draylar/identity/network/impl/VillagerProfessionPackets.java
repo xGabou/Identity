@@ -3,11 +3,8 @@ package draylar.identity.network.impl;
 import dev.architectury.networking.NetworkManager;
 import draylar.identity.api.PlayerIdentity;
 import draylar.identity.impl.PlayerDataProvider;
-import draylar.identity.network.ClientNetworking;
 import draylar.identity.network.NetworkHandler;
-import draylar.identity.screen.VillagerProfessionScreen;
 import io.netty.buffer.Unpooled;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
@@ -64,23 +61,7 @@ public class VillagerProfessionPackets {
         });
     }
 
-    public static void registerClientHandler() {
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.OPEN_PROFESSION_SCREEN, (buf, context) -> {
-            Identifier professionId = buf.readIdentifier();
-            net.minecraft.util.math.BlockPos pos = buf.readBlockPos();
-            Identifier worldId = buf.readIdentifier();
-            String existingName = null;
-            String existingProfession = null;
-            if (buf.readBoolean()) {
-                existingName = buf.readString();
-                String prof = buf.readString();
-                existingProfession = prof.isEmpty() ? null : prof;
-            }
-            String finalExistingName = existingName;
-            String finalExistingProfession = existingProfession;
-            ClientNetworking.runOrQueue(context, player -> MinecraftClient.getInstance().setScreen(new VillagerProfessionScreen(professionId, pos, worldId, finalExistingName, finalExistingProfession)));
-        });
-    }
+    // client handler moved to draylar.identity.network.client.VillagerProfessionClient
 
     private static void handleServerRequest(ServerPlayerEntity player, Identifier professionId, String rawName, boolean reset, net.minecraft.util.math.BlockPos pos, Identifier worldId, String originalName) {
         PlayerDataProvider data = (PlayerDataProvider) player;
@@ -166,6 +147,7 @@ public class VillagerProfessionPackets {
         player.sendMessage(Text.translatable(existingKey != null ? "identity.profession.updated" : "identity.profession.saved", trimmedName, professionText), false);
         world.spawnParticles(net.minecraft.particle.ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY() + 1.0, player.getZ(), 10, 0.5, 0.5, 0.5, 0.0);
         PlayerIdentity.sync(player);
+        draylar.identity.network.impl.VillagerIdentitiesPackets.sendSync(player);
     }
 
     private static boolean matchesWorkstation(NbtCompound tag, Identifier worldId, long workstationPos) {

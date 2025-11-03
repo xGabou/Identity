@@ -80,6 +80,11 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
             identity.preferredHand = player.preferredHand;
             identity.setOnGround(player.isOnGround());
             identity.setVelocity(player.getVelocity());
+            identity.setSneaking(player.isSneaking());
+            identity.setSprinting(player.isSprinting());
+            identity.setSwimming(player.isSwimming());
+            identity.setCurrentHand(player.getActiveHand());
+            identity.setPose(player.getPose());
 
             ((EntityAccessor) identity).setVehicle(player.getVehicle());
             ((EntityAccessor) identity).setTouchingWater(player.isTouchingWater());

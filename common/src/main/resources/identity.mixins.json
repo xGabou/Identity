@@ -39,6 +39,7 @@
     "accessor.MobEntityAccessor",
     "accessor.ParrotEntityAccessor",
     "accessor.RavagerEntityAccessor",
+    "accessor.VillagerEntityAccessor",
     "accessor.SlimeEntityAccessor",
     "entity.BowItemMixin",
     "player.PlayerEntityDataMixin",

@@ -4,7 +4,7 @@ import com.github.alexthe666.alexsmobs.entity.EntityAnaconda;
 
 import com.github.alexthe666.alexsmobs.entity.EntityAnaconda;
 import draylar.identity.ability.IdentityAbility;
-import draylar.identity.util.AbilityUtils;
+import net.Gabou.gaboulibs.util.AbilityUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.item.Item;

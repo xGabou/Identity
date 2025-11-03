@@ -1,5 +1,7 @@
 plugins {
     id 'com.gradleup.shadow'
+    id 'com.matthewprenger.cursegradle' version '1.4.0' // CurseForge uploader
+    id "com.modrinth.minotaur" version "2.8.10" // Modrinth uploader
 }
 
 loom {
@@ -37,7 +39,7 @@ dependencies {
     modRuntimeOnly "curse.maven:alexs-mobs-426558:5698791"
     modRuntimeOnly "curse.maven:citadel-331936:5633260"
     //modRuntimeOnly "curse.maven:sculk-horde-501766:6893408"
-
+    modImplementation "curse.maven:gabous-libs-1367332:7160159"
 //    modCompileOnly "curse.maven:naturalist-627986:6509918"
 //    modRuntimeOnly "curse.maven:naturalist-627986:6509918"
     modCompileOnly("com.starfish_studios:naturalist-5.0pre4+forge-1.20.1")
@@ -93,6 +95,34 @@ publishing {
         mavenForge(MavenPublication) {
             artifactId = rootProject.archives_base_name + "-" + project.name
             from components.java
+        }
+    }
+}
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "u8V1OwVf" // from your Modrinth project URL
+    versionNumber = "Forge-${project.version}"
+    versionName = "Identity ${mod_version}"
+    changelog = rootProject.file("IdentityChangeLog.md").text
+    gameVersions = ["1.20.1"]
+    loaders = ["forge"]
+    versionType = "release"
+    dependencies {
+        required.project "lhGA9TYQ"
+    }
+    uploadFile = file("build/libs/${archivesBaseName}-${version}-forge.jar")
+}
+curseforge {
+    apiKey = System.getenv("CURSEFORGE_TOKEN")
+
+    project {
+        id = "1238155"
+        changelog = rootProject.file("IdentityChangeLog.md")
+        releaseType = "release" // options: alpha, beta, release
+        addGameVersion "1.20.1"
+        addGameVersion "Forge"
+        mainArtifact(file("build/libs/${archivesBaseName}-${version}-forge.jar")) {
+            displayName = "Forge-${version}"
         }
     }
 }

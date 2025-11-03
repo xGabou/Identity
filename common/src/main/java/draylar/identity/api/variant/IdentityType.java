@@ -2,11 +2,12 @@ package draylar.identity.api.variant;
 
 import draylar.identity.Identity;
 import draylar.identity.impl.variant.*;
-import draylar.identity.util.IdentityCompatUtils;
+import net.Gabou.gaboulibs.util.CompatUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.BuiltinRegistries;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -93,7 +94,10 @@ public class IdentityType<T extends LivingEntity> {
             for (EntityType<?> type : Registries.ENTITY_TYPE) {
 
                 // Skip if already blacklisted
-                if (IdentityCompatUtils.isBlacklistedEntityType(type)) {
+
+                Identifier id = Registries.ENTITY_TYPE.getId(type);
+
+                if (CompatUtils.isBlacklistedEntityType(id.toString())) {
                     continue;
                 }
 
@@ -108,7 +112,7 @@ public class IdentityType<T extends LivingEntity> {
 
                 } catch (Throwable t) {
                     // Mark incompatible so future checks skip instantly
-                    IdentityCompatUtils.markIncompatibleEntityType(type);
+                    CompatUtils.markIncompatibleEntityType(id.toString());
                     Identity.LOGGER.warn("Skipping incompatible identity type {} during cache.", type, t);
                 }
             }

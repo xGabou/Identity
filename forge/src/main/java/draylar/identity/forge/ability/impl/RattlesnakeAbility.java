@@ -3,7 +3,7 @@ package draylar.identity.forge.ability.impl;
 import com.github.alexthe666.alexsmobs.entity.EntityRattlesnake;
 
 import draylar.identity.ability.IdentityAbility;
-import draylar.identity.util.AbilityUtils;
+import net.Gabou.gaboulibs.util.AbilityUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;

@@ -4,7 +4,7 @@ import com.github.alexthe666.alexsmobs.entity.EntityCrocodile;
 
 import com.github.alexthe666.alexsmobs.entity.EntityCrocodile;
 import draylar.identity.ability.IdentityAbility;
-import draylar.identity.util.AbilityUtils;
+import net.Gabou.gaboulibs.util.AbilityUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;

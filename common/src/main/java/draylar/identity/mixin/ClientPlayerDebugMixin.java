@@ -1,6 +1,6 @@
 package draylar.identity.mixin;
 
-import draylar.identity.util.PlayerDebugUtils;
+import net.Gabou.gaboulibs.util.PlayerDebugUtils;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;

@@ -26,8 +26,9 @@ public class ClientNetworking implements NetworkHandler {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.FAVORITE_SYNC, FavoritePackets::handleFavoriteSyncPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.ABILITY_SYNC, ClientNetworking::handleAbilitySyncPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.UNLOCK_SYNC, UnlockPackets::handleUnlockSyncPacket);
+        draylar.identity.network.impl.VillagerIdentitiesPackets.registerClientHandler();
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, NetworkHandler.CONFIG_SYNC, ClientNetworking::handleConfigurationSyncPacket);
-        VillagerProfessionPackets.registerClientHandler();
+        draylar.identity.network.client.VillagerProfessionClient.registerClientHandler();
     }
 
     public static void runOrQueue(NetworkManager.PacketContext context, ApplicablePacket packet) {

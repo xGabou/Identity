@@ -6,7 +6,7 @@ import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.PlayerUnlocks;
 import draylar.identity.api.FlightHelper;
 import draylar.identity.api.platform.IdentityConfig;
-import draylar.identity.util.PlayerDebugUtils;
+import net.Gabou.gaboulibs.util.PlayerDebugUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;

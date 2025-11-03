@@ -16,4 +16,5 @@ public interface NetworkHandler {
     Identifier OPEN_PROFESSION_SCREEN = Identity.id("open_profession_screen");
     Identifier SET_PROFESSION = Identity.id("set_profession");
     Identifier START_TRADE = Identity.id("start_trade");
+    Identifier VILLAGER_IDENTITIES_SYNC = Identity.id("villager_identities_sync");
 }

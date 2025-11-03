@@ -23,6 +23,12 @@ public class RespawnDataCopyMixin {
         newData.setUnlocked(oldData.getUnlocked());
         newData.setFavorites(oldData.getFavorites());
 
+        // Copy villager identities and active key
+        newData.getVillagerIdentities().clear();
+        newData.getVillagerIdentities().putAll(oldData.getVillagerIdentities());
+        newData.setActiveVillagerKey(oldData.getActiveVillagerKey());
+
         PlayerUnlocks.sync((ServerPlayerEntity) (Object) this);
+        draylar.identity.network.impl.VillagerIdentitiesPackets.sendSync((ServerPlayerEntity) (Object) this);
     }
 }
