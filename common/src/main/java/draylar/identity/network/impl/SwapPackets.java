@@ -5,13 +5,9 @@ import draylar.identity.Identity;
 import draylar.identity.api.PlayerIdentity;
 import draylar.identity.api.platform.IdentityConfig;
 import draylar.identity.api.variant.IdentityType;
-import draylar.identity.network.ClientNetworking;
-import draylar.identity.network.NetworkHandler;
-import draylar.identity.util.IdentityCompatUtils;
-import io.netty.buffer.Unpooled;
+import net.Gabou.gaboulibs.util.CompatUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -64,7 +60,7 @@ public class SwapPackets {
                                             }
                                             PlayerIdentity.updateIdentity((ServerPlayerEntity) context.getPlayer(), type, created);
                                         } catch (Exception e) {
-                                            IdentityCompatUtils.markIncompatibleEntityType(entityType);
+                                            CompatUtils.markIncompatibleEntityType(entityType.toString());
                                             Identity.LOGGER.warn("Failed to create identity " + entityType.getTranslationKey(), e);
                                         }
                                     }

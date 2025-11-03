@@ -1,6 +1,7 @@
 package draylar.identity.api.platform;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -110,4 +111,65 @@ public abstract class IdentityConfig {
 
     public abstract List<String> removedFlyingEntities();
 
+    public abstract void setOverlayIdentityUnlocks(boolean value);
+
+    public abstract void setOverlayIdentityRevokes(boolean value);
+
+    public abstract void setRevokeIdentityOnDeath(boolean value);
+
+    public abstract void setIdentitiesEquipItems(boolean value);
+
+    public abstract void setIdentitiesEquipArmor(boolean value);
+
+    public abstract void setShowPlayerNametag(boolean value);
+
+    public abstract void setRenderOwnNameTag(boolean value);
+
+    public abstract void setHostilesIgnoreHostileIdentityPlayer(boolean value);
+
+    public abstract void setHostilesForgetNewHostileIdentityPlayer(boolean value);
+
+    public abstract void setWolvesAttackIdentityPrey(boolean value);
+
+    public abstract void setOwnedWolvesAttackIdentityPrey(boolean value);
+
+    public abstract void setVillagersRunFromIdentities(boolean value);
+
+    public abstract void setFoxesAttackIdentityPrey(boolean value);
+
+    public abstract void setUseIdentitySounds(boolean value);
+
+    public abstract void setPlayAmbientSounds(boolean value);
+
+    public abstract void setHearSelfAmbient(boolean value);
+
+    public abstract void setEnableFlight(boolean value);
+
+    public abstract void setHostilityTime(int ticks);
+
+    public abstract void setScalingHealth(boolean value);
+
+    public abstract void setMaxHealth(int value);
+
+    public abstract void setEnableClientSwapMenu(boolean value);
+
+    public abstract void setForceChangeNew(boolean value);
+
+    public abstract void setForceChangeAlways(boolean value);
+
+    public abstract void setLogCommands(boolean value);
+
+    public abstract void setFlySpeed(float value);
+
+    public abstract void setKillForIdentity(boolean value);
+
+    public abstract void setRequiredKillsForIdentity(int value);
+
+    public abstract void setEndermanAbilityTeleportDistance(int value);
+
+    public abstract void setWardenIsBlinded(boolean value);
+
+    public abstract void setWardenBlindsNearby(boolean value);
+
+    public abstract void setForcedIdentity(@Nullable String id);
 }

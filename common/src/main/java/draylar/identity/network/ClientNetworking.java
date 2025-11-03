@@ -38,7 +38,7 @@ public class ClientNetworking implements NetworkHandler {
         );
         UnlockPackets.registerClientHandler();
         FavoritePackets.registerFavoriteSyncHandler();
-        VillagerProfessionPackets.registerClientHandler();
+        draylar.identity.network.impl.VillagerIdentitiesPackets.registerClientHandler();
         NetworkManager.registerReceiver(
                 NetworkManager.Side.S2C,
                 AbilitySyncPayload.ID,
@@ -51,6 +51,7 @@ public class ClientNetworking implements NetworkHandler {
                 ConfigSyncPayload.CODEC,
                 ClientNetworking::handleConfigurationSyncPacket
         );
+        draylar.identity.network.client.VillagerProfessionClient.registerClientHandler();
 
 
     }

@@ -13,9 +13,12 @@ public class FlightHelper {
     }
 
     public static void revokeFlight(ServerPlayerEntity player) {
-        if (!player.isCreative() && !player.isSpectator()) {
-            player.getAbilities().allowFlying = false;
+        // Do not interfere with creative or spectator flight
+        if (player.isCreative() || player.isSpectator()) {
+            return;
         }
+
+        player.getAbilities().allowFlying = false;
         player.getAbilities().flying = false;
         player.sendAbilitiesUpdate();
     }

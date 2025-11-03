@@ -67,6 +67,20 @@ public abstract class LivingEntityMixin extends Entity implements NearbySongAcce
         }
     }
 
+    @Inject(
+            method = "getStepHeight",
+            at = @At("RETURN"),
+            cancellable = true)
+    public void modifyStepHeight(CallbackInfoReturnable<Float> cir) {
+        if ((Object) this instanceof PlayerEntity player) {
+            LivingEntity identity = PlayerIdentity.getIdentity(player);
+
+            if (identity != null) {
+               cir.setReturnValue(identity.getStepHeight());
+            }
+        }
+    }
+
     @Inject(method = "baseTick", at = @At("HEAD"))
     private void identity$preventAirRegenForAquatic(CallbackInfo ci) {
         if ((Object) this instanceof PlayerEntity player) {

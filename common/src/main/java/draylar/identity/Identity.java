@@ -65,6 +65,8 @@ public class Identity {
 
             // Sync favorites
             PlayerFavorites.sync(player);
+            draylar.identity.network.impl.VillagerIdentitiesPackets.sendSync(player);
+
         });
     }
 

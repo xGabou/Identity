@@ -34,4 +34,6 @@ public interface PlayerDataProvider {
     Map<String, NbtCompound> getVillagerIdentities();
     void setVillagerIdentity(String key, NbtCompound identity);
     void removeVillagerIdentity(String key);
+    @Nullable String getActiveVillagerKey();
+    void setActiveVillagerKey(@Nullable String key);
 }

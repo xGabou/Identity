@@ -16,10 +16,6 @@ public class IdentityHelpScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Avoid blur; render the standard options background texture
-        this.renderInGameBackground(context);
-
-
         // Draw crisp text without fractional scaling
         MatrixStack matrices = context.getMatrices();
         matrices.push();

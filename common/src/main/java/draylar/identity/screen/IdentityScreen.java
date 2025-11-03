@@ -11,7 +11,7 @@ import draylar.identity.screen.widget.EntityWidget;
 import draylar.identity.screen.widget.HelpWidget;
 import draylar.identity.screen.widget.PlayerWidget;
 import draylar.identity.screen.widget.SearchWidget;
-import draylar.identity.util.IdentityCompatUtils;
+import net.Gabou.gaboulibs.util.CompatUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -22,7 +22,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -36,6 +35,10 @@ public class IdentityScreen extends Screen {
     private final List<IdentityType<?>>                   unlocked        = new ArrayList<>();
     private final Map<IdentityType<?>, LivingEntity>     renderEntities  = new LinkedHashMap<>();
     private final List<EntityWidget>                     entityWidgets   = new ArrayList<>();
+
+    // Saved villager display names keyed by synthetic IdentityType entries
+    private final Map<IdentityType<?>, String>            villagerNames   = new LinkedHashMap<>();
+
 
     // header widgets
     private SearchWidget   searchBar;
@@ -104,8 +107,11 @@ public class IdentityScreen extends Screen {
                 children().removeIf(w -> w instanceof EntityWidget);
                 entityWidgets.clear();
 
+                String q = text.toLowerCase();
                 List<IdentityType<?>> filtered = unlocked.stream()
-                        .filter(t -> text.isEmpty() || t.getEntityType().getTranslationKey().contains(text))
+                        .filter(t -> q.isEmpty()
+                                || t.getEntityType().getTranslationKey().toLowerCase().contains(q)
+                                || (isVillagerEntry(t) && villagerNames.getOrDefault(t, "").toLowerCase().contains(q)))
                         .collect(Collectors.toList());
 
                 populateEntities(player, filtered);
@@ -117,7 +123,7 @@ public class IdentityScreen extends Screen {
     private void loadEntities(MinecraftClient client) {
         for (IdentityType<?> type : IdentityType.getAllTypes(client.world)) {
             // Check by type before instantiating
-            if (IdentityCompatUtils.isBlacklistedEntityType(type.getEntityType())) {
+            if (CompatUtils.isBlacklistedEntityType(type.getEntityType().toString())) {
                 continue;
             }
 
@@ -125,7 +131,7 @@ public class IdentityScreen extends Screen {
                 LivingEntity e = (LivingEntity) type.create(client.world);
                 renderEntities.put(type, e);
             } catch (Exception e) {
-                IdentityCompatUtils.markIncompatibleEntityType(type.getEntityType());
+                CompatUtils.markIncompatibleEntityType(type.getEntityType().toString());
                 Identity.LOGGER.warn("Failed to create identity " + type.getEntityType().getTranslationKey(), e);
             }
         }
@@ -147,12 +153,32 @@ public class IdentityScreen extends Screen {
                         // Use a special variant domain to differentiate saved villager entries
                         IdentityType<VillagerEntity> idType =
                                 new IdentityType<>(EntityType.VILLAGER, 1_000_000 + i);
+                        // Remember display name for search; prefer IdentityName tag, fallback to key
+                        String display = tag.contains("IdentityName") ? tag.getString("IdentityName") : key;
+                        villagerNames.put(idType, display == null ? key : display);
+                        // Improve tooltip by setting custom entity display name
+                        if (display != null && !display.isEmpty()) {
+                            living.setCustomName(net.minecraft.text.Text.literal(display));
+                        }
                         renderEntities.put(idType, living);
                         i++;
                     }
                 }
+                // also expose a generic Villager identity if none exists and user has at least one saved villager
+                if (!keys.isEmpty()) {
+                    IdentityType<VillagerEntity> baseVillager = new IdentityType<>(EntityType.VILLAGER);
+                    if (!renderEntities.containsKey(baseVillager)) {
+                        try {
+                            LivingEntity e = (LivingEntity) baseVillager.create(client.world);
+                            renderEntities.put(baseVillager, e);
+                        } catch (Throwable ignoredToo) { }
+                    }
+                }
             }
         } catch (Throwable ignored) { }
+    }
+    private boolean isVillagerEntry(IdentityType<?> t) {
+        return t.getEntityType() == EntityType.VILLAGER && t.getVariantData() >= 1_000_000;
     }
 
 
@@ -315,6 +341,7 @@ public class IdentityScreen extends Screen {
         if (player != null) {
             // FULL FIX HERE:
             renderEntities.clear(); // 🔥 Clear old render entities!
+            villagerNames.clear();  // clear cached villager names
             loadEntities(client);
 
             unlocked.clear();

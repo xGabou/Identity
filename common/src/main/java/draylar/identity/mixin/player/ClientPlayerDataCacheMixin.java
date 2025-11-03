@@ -44,6 +44,10 @@ public class ClientPlayerDataCacheMixin {
             ((PlayerDataProvider) client.player).setFavorites(dataCache.getFavorites());
             ((PlayerDataProvider) client.player).setAbilityCooldown(dataCache.getAbilityCooldown());
             ((PlayerDataProvider) client.player).setRemainingHostilityTime(dataCache.getRemainingHostilityTime());
+            // Villager identities & active key to minimize UI blips
+            ((PlayerDataProvider) client.player).getVillagerIdentities().clear();
+            ((PlayerDataProvider) client.player).getVillagerIdentities().putAll(dataCache.getVillagerIdentities());
+            ((PlayerDataProvider) client.player).setActiveVillagerKey(dataCache.getActiveVillagerKey());
         }
 
         dataCache = null;

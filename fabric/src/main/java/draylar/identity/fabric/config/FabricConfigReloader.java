@@ -15,4 +15,10 @@ public class FabricConfigReloader implements ConfigReloader {
 
         System.out.println("[Identity] Fabric config reloaded.");
     }
+    @Override
+    public void saveConfig() {
+        AutoConfig.getConfigHolder(IdentityFabricConfig.class).save();
+        IdentityFabric.CONFIG = AutoConfig.getConfigHolder(IdentityFabricConfig.class).getConfig();
+        IdentityPlatform.setConfig(IdentityFabric.CONFIG);
+    }
 }

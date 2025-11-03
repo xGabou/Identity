@@ -12,4 +12,9 @@ public class NeoForgeConfigReloader implements ConfigReloader {
 
         System.out.println("[Identity] NeoForge config reloaded.");
     }
+    @Override
+    public void saveConfig() {
+        ConfigLoader.save(IdentityNeoForge.CONFIG);
+        IdentityPlatform.setConfig(IdentityNeoForge.CONFIG);
+    }
 }

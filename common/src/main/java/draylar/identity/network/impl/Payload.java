@@ -42,7 +42,9 @@ public class Payload {
     }
     public record OpenProfessionScreenPayload(Identifier professionId,
                                               BlockPos pos,
-                                              Identifier worldId) implements CustomPayload {
+                                              Identifier worldId,
+                                              Optional<String> existingName,
+                                              Optional<String> existingProfessionId) implements CustomPayload {
         public static final CustomPayload.Id<OpenProfessionScreenPayload> ID =
                 new CustomPayload.Id<>(NetworkHandler.OPEN_PROFESSION_SCREEN);
 
@@ -50,13 +52,15 @@ public class Payload {
                 PacketCodec.of((id, buf) -> buf.writeIdentifier(id), buf -> buf.readIdentifier());
 
         private static final PacketCodec<RegistryByteBuf, BlockPos> BLOCKPOS_CODEC =
-                PacketCodec.of((pos, buf) -> buf.writeBlockPos(pos), buf -> buf.readBlockPos());
+                PacketCodec.of((target, buf) -> buf.writeBlockPos(target), buf -> buf.readBlockPos());
 
         public static final PacketCodec<RegistryByteBuf, OpenProfessionScreenPayload> CODEC =
                 PacketCodec.tuple(
                         IDENTIFIER_CODEC, OpenProfessionScreenPayload::professionId,
                         BLOCKPOS_CODEC, OpenProfessionScreenPayload::pos,
                         IDENTIFIER_CODEC, OpenProfessionScreenPayload::worldId,
+                        PacketCodecs.optional(PacketCodecs.STRING), OpenProfessionScreenPayload::existingName,
+                        PacketCodecs.optional(PacketCodecs.STRING), OpenProfessionScreenPayload::existingProfessionId,
                         OpenProfessionScreenPayload::new
                 );
 
@@ -71,18 +75,18 @@ public class Payload {
                                        String name,
                                        boolean reset,
                                        BlockPos pos,
-                                       Identifier worldId) implements CustomPayload {
+                                       Identifier worldId,
+                                       Optional<String> originalName) implements CustomPayload {
 
         public static final CustomPayload.Id<SetProfessionPayload> ID =
                 new CustomPayload.Id<>(NetworkHandler.SET_PROFESSION);
 
-        // Custom codecs for Identifier and BlockPos
         private static final PacketCodec<RegistryByteBuf, Identifier> IDENTIFIER_CODEC =
                 PacketCodec.of((id, buf) -> buf.writeIdentifier(id),
                         buf -> buf.readIdentifier());
 
         private static final PacketCodec<RegistryByteBuf, BlockPos> BLOCKPOS_CODEC =
-                PacketCodec.of((pos, buf) -> buf.writeBlockPos(pos),
+                PacketCodec.of((target, buf) -> buf.writeBlockPos(target),
                         buf -> buf.readBlockPos());
 
         public static final PacketCodec<RegistryByteBuf, SetProfessionPayload> CODEC =
@@ -92,6 +96,7 @@ public class Payload {
                         PacketCodecs.BOOL, SetProfessionPayload::reset,
                         BLOCKPOS_CODEC, SetProfessionPayload::pos,
                         IDENTIFIER_CODEC, SetProfessionPayload::worldId,
+                        PacketCodecs.optional(PacketCodecs.STRING), SetProfessionPayload::originalName,
                         SetProfessionPayload::new
                 );
 
@@ -123,6 +128,24 @@ public class Payload {
             return ID;
         }
     }
+
+    public record VillagerIdentitiesSyncPayload(NbtCompound data) implements CustomPayload {
+        public static final CustomPayload.Id<VillagerIdentitiesSyncPayload> ID =
+                new CustomPayload.Id<>(NetworkHandler.VILLAGER_IDENTITIES_SYNC);
+
+        public static final PacketCodec<RegistryByteBuf, VillagerIdentitiesSyncPayload> CODEC =
+                PacketCodec.tuple(
+                        PacketCodecs.NBT_COMPOUND, VillagerIdentitiesSyncPayload::data,
+                        VillagerIdentitiesSyncPayload::new
+                );
+
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return ID;
+        }
+    }
+
+
     public record UseAbilityPayload() implements CustomPayload {
         // Packet ID
         public static final CustomPayload.Id<UseAbilityPayload> ID =

@@ -29,7 +29,9 @@ public final class ProfessionLifecycle {
         while (it.hasNext()) {
             Map.Entry<String, NbtCompound> e = it.next();
             NbtCompound tag = e.getValue();
-            if (tag == null) continue;
+            if (tag == null) {
+                continue;
+            }
 
             String prof = tag.getString("ProfessionId");
             if (prof == null || prof.isEmpty()) continue; // unemployed
@@ -37,39 +39,39 @@ public final class ProfessionLifecycle {
             String dim = tag.getString("WorkstationDim");
             long posLong = tag.contains("WorkstationPos") ? tag.getLong("WorkstationPos") : Long.MIN_VALUE;
             if (dim == null || dim.isEmpty() || posLong == Long.MIN_VALUE) {
-                // Missing binding info; mark unemployed
-                tag.remove("ProfessionId");
-                tag.remove("WorkstationDim");
-                tag.remove("WorkstationPos");
-                player.sendMessage(Text.literal(prof + " lost due to block destruction"), false);
+                removeAndNotify(player, it, e.getKey(), prof);
                 continue;
             }
 
             ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, Identifier.of(dim)));
             if (world == null) {
-                clearAndNotify(player, tag, prof);
+                removeAndNotify(player, it, e.getKey(), prof);
                 continue;
             }
 
             BlockPos pos = BlockPos.fromLong(posLong);
             if (world.isAir(pos)) {
-                clearAndNotify(player, tag, prof);
+                removeAndNotify(player, it, e.getKey(), prof);
                 continue;
             }
 
             // Optional: verify POI still exists
             if (net.minecraft.world.poi.PointOfInterestTypes.getTypeForState(world.getBlockState(pos)).isEmpty()) {
-                clearAndNotify(player, tag, prof);
+                removeAndNotify(player, it, e.getKey(), prof);
             }
         }
     }
 
-    private static void clearAndNotify(ServerPlayerEntity player, NbtCompound tag, String prof) {
-        tag.remove("ProfessionId");
-        tag.remove("WorkstationDim");
-        tag.remove("WorkstationPos");
-        player.sendMessage(Text.literal(prof + " lost due to block destruction"), false);
-        // If currently morphed as this saved villager, force refresh on client
+    private static void removeAndNotify(ServerPlayerEntity player, Iterator<Map.Entry<String, NbtCompound>> iterator, String key, String prof) {
+        iterator.remove();
+        PlayerDataProvider data = (PlayerDataProvider) player;
+        if (key.equals(data.getActiveVillagerKey())) {
+            data.setActiveVillagerKey(null);
+        }
+
+        player.sendMessage(Text.translatable("identity.profession.block_destroyed", key, Text.literal(prof)), false);
         PlayerIdentity.sync(player);
+        draylar.identity.network.impl.VillagerIdentitiesPackets.sendSync(player);
     }
 }
+

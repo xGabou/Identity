@@ -1,5 +1,7 @@
 plugins {
     id 'com.gradleup.shadow'
+    id 'com.matthewprenger.cursegradle' version '1.4.0' // CurseForge uploader
+    id "com.modrinth.minotaur" version "2.8.10" // Modrinth uploader
 }
 
 architectury {
@@ -35,6 +37,7 @@ dependencies {
     modImplementation "dev.architectury:architectury-neoforge:$rootProject.architectury_api_version"
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    modImplementation "curse.maven:gabous-libs-1367332:7183487"
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 }
 
@@ -70,4 +73,32 @@ shadowJar {
 
 remapJar {
     input.set shadowJar.archiveFile
+}
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "u8V1OwVf" // from your Modrinth project URL
+    versionNumber = "NeoForge-${project.version}"
+    versionName = "Identity ${mod_version}"
+    changelog = rootProject.file("IdentityChangeLog.md").text
+    gameVersions = ["1.21.1"]
+    loaders = ["neoforge"]
+    versionType = "release"
+    dependencies {
+        required.project "lhGA9TYQ"
+    }
+    uploadFile = file("build/libs/${archivesBaseName}-${version}.jar")
+}
+curseforge {
+    apiKey = System.getenv("CURSEFORGE_TOKEN")
+
+    project {
+        id = "1238155"
+        changelog = rootProject.file("IdentityChangeLog.md")
+        releaseType = "release" // options: alpha, beta, release
+        addGameVersion "1.21.1"
+        addGameVersion "NeoForge"
+        mainArtifact(file("build/libs/${archivesBaseName}-${version}.jar")) {
+            displayName = "NeoForge-${version}"
+        }
+    }
 }

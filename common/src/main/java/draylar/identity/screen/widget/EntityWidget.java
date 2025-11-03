@@ -51,7 +51,7 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         this.size = Math.max(1, (int) (baseSizeFactor * finalScale));
 
         entity.setGlowing(true);
-        setTooltip(Tooltip.of(type.createTooltipText(entity)));
+        setTooltip(Tooltip.of(entity.getDisplayName()));
     }
 
     @Override
@@ -75,9 +75,8 @@ public class EntityWidget<T extends LivingEntity> extends PressableWidget {
         return super.mouseClicked(mx, my, button);
     }
 
-    public Text getHoverName() {
-        return type.createTooltipText(entity);
-    }
+    public Text getHoverName() { return entity.getDisplayName(); }
+
 
     // 1.21.1: do not override render, override renderWidget instead
     @Override
