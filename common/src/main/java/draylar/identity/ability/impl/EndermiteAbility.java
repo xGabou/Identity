@@ -12,33 +12,42 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public class EndermiteAbility extends IdentityAbility<EndermiteEntity> {
-    
+
     @Override
     public void onUse(PlayerEntity player, EndermiteEntity identity, World world) {
-        double x = player.getX();
-        double y = player.getY();
-        double z = player.getZ();
+        if (world.isClient) {
+            return;
+        }
 
-        for(int i = 0; i < 16; ++i) {
-            // Pick a random location nearby to teleport to.
-            double g = player.getX() + (player.getRandom().nextDouble() - 0.5D) * 16.0D;
-            double h = MathHelper.clamp(player.getY() + (double)(player.getRandom().nextInt(16) - 8), 0.0D, world.getHeight() - 1);
-            double j = player.getZ() + (player.getRandom().nextDouble() - 0.5D) * 16.0D;
+        double startX = player.getX();
+        double startY = player.getY();
+        double startZ = player.getZ();
 
-            // Cancel vehicle/riding mechanics.
+        for (int i = 0; i < 16; ++i) {
+            // Random target position around the player
+            double targetX = startX + (player.getRandom().nextDouble() - 0.5D) * 16.0D;
+            double targetY = MathHelper.clamp(startY + (player.getRandom().nextInt(16) - 8), world.getBottomY(), world.getTopY() - 1);
+            double targetZ = startZ + (player.getRandom().nextDouble() - 0.5D) * 16.0D;
+
+            // Ensure player dismounts before teleport
             if (player.hasVehicle()) {
                 player.stopRiding();
             }
 
-            // Teleport the player and play sound FX if it succeeds.
-            if (player.teleport(g, h, j, true)) {
-                SoundEvent soundEvent = SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT;
-                world.playSound(null, x, y, z, soundEvent, SoundCategory.PLAYERS, 1.0F, 1.0F);
-                player.playSound(soundEvent, 1.0F, 1.0F);
+            // Try teleporting; returns true if success
+            if (player.teleport(targetX, targetY, targetZ, true)) {
+                SoundEvent teleportSound = SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT;
+
+                // Departure sound
+                world.playSound(null, startX, startY, startZ, teleportSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
+
+                // Arrival sound
+                player.playSound(teleportSound, 1.0F, 1.0F);
                 break;
             }
         }
     }
+
 
     @Override
     public Item getIcon() {
