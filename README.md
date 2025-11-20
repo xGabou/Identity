@@ -10,13 +10,15 @@ This version is actively maintained and updated by me, as the original creator s
 
 |        | Fabric | NeoForge |
 |--------| ----------- | ----------- |
-| 1.20.1 | ✅   | ✅    |
+| 1.21.1 | ✅   | ✅    |
 
-**Required Libraries (1.20.1):**
+**Required Libraries (1.21.1):**
 
 Fabric => [Architectury API (Fabric)](https://www.curseforge.com/minecraft/mc-mods/architectury-fabric)
 
 NeoForge => [Architectury API (NeoForge)](https://www.curseforge.com/minecraft/mc-mods/architectury-neoforge)
+
+> **Server Note:** Identity 1.21.1 targets Minecraft 1.21.x and Java 21. Running the jar on older Minecraft versions or Java runtimes will cause server startup failures. Ensure your dedicated server matches these requirements.
 
 ---
 
