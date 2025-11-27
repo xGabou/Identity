@@ -29,9 +29,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
-    @Shadow public abstract boolean isCreative();
-    @Shadow public abstract boolean isSpectator();
-    @Shadow public abstract void sendMessage(Text message, boolean actionBar);
+    @Shadow
+    public abstract boolean isCreative();
+
+    @Shadow
+    public abstract boolean isSpectator();
+
+    @Shadow
+    public abstract void sendMessage(Text message, boolean actionBar);
 
     public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
         super(world, pos, yaw, gameProfile);
@@ -42,18 +47,18 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
             at = @At("HEAD")
     )
     private void revokeIdentityOnDeath(DamageSource source, CallbackInfo ci) {
-        if(IdentityConfig.getInstance().revokeIdentityOnDeath() && !this.isCreative() && !this.isSpectator()) {
+        if (IdentityConfig.getInstance().revokeIdentityOnDeath() && !this.isCreative() && !this.isSpectator()) {
             LivingEntity entity = PlayerIdentity.getIdentity(this);
 
             // revoke the identity current equipped by the player
-            if(entity != null) {
+            if (entity != null) {
                 EntityType<?> type = entity.getType();
                 PlayerUnlocks.revoke((ServerPlayerEntity) (Object) this, PlayerIdentity.getIdentityType(this));
-                PlayerIdentity.updateIdentity((ServerPlayerEntity) (Object) this, null,null);
+                PlayerIdentity.updateIdentity((ServerPlayerEntity) (Object) this, null, null);
 
                 // todo: this option might be server-only given that this method isn't[?] called on the client
                 // send revoke message to player if they aren't in creative and the config option is on
-                if(IdentityConfig.getInstance().overlayIdentityRevokes()) {
+                if (IdentityConfig.getInstance().overlayIdentityRevokes()) {
                     sendMessage(
                             Text.translatable(
                                     "identity.revoke_entity",
@@ -82,6 +87,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
                 getAbilities().setFlySpeed(IdentityConfig.getInstance().flySpeed());
                 sendAbilitiesUpdate();
             }
+            FlightHelper.grantFlightTo(player);
         }
     }
 
@@ -96,7 +102,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     private void identity$restoreAfterRespawn(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
         PlayerIdentity.sync((ServerPlayerEntity) (Object) this);
     }
-    @Inject(method = "changeGameMode", at  = @At("TAIL"))
+
+    @Inject(method = "changeGameMode", at = @At("TAIL"))
     private void identity$onGameModeChange(GameMode newMode, CallbackInfoReturnable<Boolean> cir) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
 
